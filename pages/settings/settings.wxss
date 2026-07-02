@@ -16,7 +16,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 1rpx solid rgba(0, 0, 0, 0.06);
+  border-top: 1rpx solid #edf0f5;
 }
 
 .config-panel {
@@ -43,7 +43,7 @@
 
 .store-card {
   min-height: 128rpx;
-  border-bottom: 1rpx solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1rpx solid #edf0f5;
   padding: 22rpx 24rpx;
   box-sizing: border-box;
   display: flex;
@@ -57,9 +57,9 @@
 }
 
 .store-name {
-  color: #1d1d1f;
+  color: #1f2329;
   font-size: 30rpx;
-  font-weight: 800;
+  font-weight: 700;
   margin-bottom: 6rpx;
 }
 
@@ -74,17 +74,17 @@
   min-width: 58rpx;
   height: 52rpx;
   border-radius: 999rpx;
-  background: #f5f5f7;
-  color: #1d1d1f;
+  background: #f2f3f5;
+  color: #1f2329;
   font-size: 24rpx;
   font-weight: 700;
   line-height: 52rpx;
   padding: 0 18rpx;
-  box-shadow: inset 0 0 0 1rpx rgba(0, 0, 0, 0.06);
+  box-shadow: none;
 }
 
 .active-store {
-  background: #111111;
+  background: #07c160;
   color: #ffffff;
   min-width: 52rpx;
   padding: 0;
@@ -93,24 +93,24 @@
 .delete-store {
   width: 52rpx;
   min-width: 52rpx;
-  background: #fff1f2;
-  color: #be123c;
+  background: #fff2f0;
+  color: #e64340;
   padding: 0;
 }
 
 .shift-name {
-  color: #1d1d1f;
+  color: #1f2329;
   font-size: 30rpx;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .stepper {
   display: flex;
   align-items: center;
-  border: 1rpx solid rgba(0, 0, 0, 0.08);
-  border-radius: 999rpx;
+  border: 1rpx solid #e5e6eb;
+  border-radius: 10rpx;
   overflow: hidden;
-  background: #f5f5f7;
+  background: #f7f8fa;
 }
 
 .step-btn {
@@ -118,7 +118,7 @@
   height: 64rpx;
   border-radius: 0;
   background: transparent;
-  color: #1d1d1f;
+  color: #07c160;
   font-size: 32rpx;
   font-weight: 700;
   line-height: 64rpx;
@@ -128,8 +128,8 @@
 .need {
   width: 72rpx;
   text-align: center;
-  color: #1d1d1f;
-  font-weight: 800;
+  color: #1f2329;
+  font-weight: 700;
 }
 
 .danger-panel {
@@ -139,6 +139,6 @@
 }
 
 .danger-btn {
-  background: #fff1f2;
-  color: #be123c;
+  background: #fff2f0;
+  color: #e64340;
 }

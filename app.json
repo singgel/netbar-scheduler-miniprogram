@@ -8,9 +8,9 @@
   ],
   "window": {
     "navigationBarTitleText": "班次小助手",
-    "navigationBarBackgroundColor": "#f5f5f7",
+    "navigationBarBackgroundColor": "#f7f8fa",
     "navigationBarTextStyle": "black",
-    "backgroundColor": "#f5f5f7"
+    "backgroundColor": "#f7f8fa"
   },
   "permission": {
     "scope.userLocation": {
@@ -22,9 +22,9 @@
     "chooseLocation"
   ],
   "tabBar": {
-    "color": "#86868b",
-    "selectedColor": "#111111",
-    "backgroundColor": "#fbfbfd",
+    "color": "#8a8f99",
+    "selectedColor": "#07c160",
+    "backgroundColor": "#ffffff",
     "borderStyle": "black",
     "list": [
       {

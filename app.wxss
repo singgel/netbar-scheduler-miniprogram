@@ -1,65 +1,65 @@
 page {
-  background: #f5f5f7;
-  color: #1d1d1f;
+  background: #f7f8fa;
+  color: #1f2329;
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
   font-size: 28rpx;
 }
 
 .page {
   min-height: 100vh;
-  padding: 28rpx;
+  padding: 24rpx;
   box-sizing: border-box;
 }
 
 .panel {
-  background: rgba(255, 255, 255, 0.88);
-  border: 1rpx solid rgba(0, 0, 0, 0.06);
-  border-radius: 24rpx;
-  padding: 30rpx;
+  background: #ffffff;
+  border: 1rpx solid #edf0f5;
+  border-radius: 16rpx;
+  padding: 28rpx;
   box-sizing: border-box;
-  box-shadow: 0 18rpx 48rpx rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8rpx 24rpx rgba(31, 35, 41, 0.04);
 }
 
 .section-title {
-  color: #1d1d1f;
-  font-size: 34rpx;
-  font-weight: 800;
-  line-height: 46rpx;
+  color: #1f2329;
+  font-size: 32rpx;
+  font-weight: 700;
+  line-height: 44rpx;
 }
 
 .section-label {
-  color: #86868b;
+  color: #646a73;
   font-size: 24rpx;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0;
-  margin: 10rpx 10rpx 12rpx;
+  margin: 22rpx 6rpx 12rpx;
 }
 
 .list-panel {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1rpx solid rgba(0, 0, 0, 0.06);
-  border-radius: 24rpx;
-  box-shadow: 0 18rpx 48rpx rgba(0, 0, 0, 0.06);
+  background: #ffffff;
+  border: 1rpx solid #edf0f5;
+  border-radius: 16rpx;
+  box-shadow: 0 8rpx 24rpx rgba(31, 35, 41, 0.04);
   overflow: hidden;
 }
 
 .muted {
-  color: #86868b;
+  color: #8a8f99;
 }
 
 .btn {
-  height: 80rpx;
-  border-radius: 999rpx;
+  height: 82rpx;
+  border-radius: 10rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10rpx;
   padding: 0 30rpx;
   font-size: 28rpx;
-  font-weight: 700;
-  line-height: 80rpx;
+  font-weight: 600;
+  line-height: 82rpx;
   border: 0;
-  box-shadow: inset 0 0 0 1rpx rgba(0, 0, 0, 0.06);
+  box-shadow: none;
   transition: opacity 0.18s ease;
 }
 
@@ -68,19 +68,18 @@ page {
 }
 
 .btn-primary {
-  background: #111111;
+  background: #07c160;
   color: #ffffff;
-  box-shadow: 0 16rpx 34rpx rgba(0, 0, 0, 0.18);
 }
 
 .btn-ghost {
-  background: rgba(255, 255, 255, 0.92);
-  color: #111111;
+  background: #f2f3f5;
+  color: #1f2329;
 }
 
 .btn-danger {
-  background: #fff1f2;
-  color: #be123c;
+  background: #fff2f0;
+  color: #e64340;
 }
 
 .btn-icon {
@@ -97,62 +96,62 @@ page {
 }
 
 .btn-primary .btn-icon {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.22);
   color: #ffffff;
 }
 
 .btn-ghost .btn-icon {
-  background: #f5f5f7;
-  color: #111111;
+  background: #ffffff;
+  color: #1f2329;
 }
 
 .btn-danger .btn-icon,
 .danger-btn .btn-icon {
-  background: rgba(190, 18, 60, 0.1);
-  color: #be123c;
+  background: rgba(230, 67, 64, 0.1);
+  color: #e64340;
 }
 
 .icon-tile {
-  width: 54rpx;
-  height: 54rpx;
-  border-radius: 16rpx;
+  width: 58rpx;
+  height: 58rpx;
+  border-radius: 12rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f5f7;
-  color: #1d1d1f;
+  background: #f2f3f5;
+  color: #1f2329;
   font-size: 28rpx;
-  font-weight: 800;
-  line-height: 54rpx;
+  font-weight: 700;
+  line-height: 58rpx;
   flex-shrink: 0;
 }
 
 .icon-tile.dark {
-  background: #111111;
+  background: #07c160;
   color: #ffffff;
 }
 
 .icon-tile.blue {
-  background: #e8f0ff;
-  color: #2563eb;
+  background: #e8f7ff;
+  color: #1485ee;
 }
 
 .icon-tile.green {
-  background: #e8f8f2;
-  color: #047857;
+  background: #e8f8ef;
+  color: #07c160;
 }
 
 .icon-tile.red {
-  background: #fff1f2;
-  color: #be123c;
+  background: #fff2f0;
+  color: #e64340;
 }
 
 .input {
   min-height: 82rpx;
-  border: 1rpx solid rgba(0, 0, 0, 0.08);
-  border-radius: 18rpx;
+  border: 1rpx solid #e5e6eb;
+  border-radius: 10rpx;
   padding: 0 24rpx;
   box-sizing: border-box;
-  background: #f5f5f7;
-  color: #1d1d1f;
+  background: #ffffff;
+  color: #1f2329;
 }

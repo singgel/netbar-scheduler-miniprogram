@@ -18,7 +18,7 @@
     <view class="role-grid">
       <view class="role-card {{role === 'admin' ? 'active' : ''}}" data-role="admin" bindtap="switchRole">
         <view class="role-main">
-          <view class="icon-tile dark">M</view>
+          <view class="icon-tile dark">管</view>
           <view>
             <view class="role-name">管理端</view>
             <view class="muted">安排班次与维护资料</view>
@@ -28,7 +28,7 @@
       </view>
       <view class="role-card {{role === 'employee' ? 'active' : ''}}" data-role="employee" bindtap="switchRole">
         <view class="role-main">
-          <view class="icon-tile">E</view>
+          <view class="icon-tile">员</view>
           <view>
             <view class="role-name">员工端</view>
             <view class="muted">查看班次与完成打卡</view>
@@ -125,7 +125,7 @@
     </navigator>
     <navigator wx:if="{{role === 'admin'}}" class="quick-card" url="/pages/settings/settings" open-type="switchTab">
       <view class="quick-main">
-        <view class="icon-tile">S</view>
+        <view class="icon-tile">设</view>
         <view>
           <view class="quick-title">门店与规则</view>
           <view class="muted">维护门店位置和班次人数</view>
