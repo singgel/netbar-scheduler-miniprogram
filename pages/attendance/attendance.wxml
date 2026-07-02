@@ -1,0 +1,50 @@
+<view class="page">
+  <view wx:if="{{role === 'employee' && !employeeReady}}" class="panel guard-panel">
+    <view class="section-title">请先完成员工登录</view>
+    <view class="muted">需要授权头像昵称和手机号后，才能打卡。</view>
+    <navigator class="btn btn-primary guard-btn" url="/pages/home/home" open-type="switchTab"><text class="btn-icon">←</text>回到工作台</navigator>
+  </view>
+
+  <view wx:else class="panel">
+    <view class="section-title">今日打卡</view>
+    <view class="muted today">{{today}}</view>
+
+    <view wx:if="{{role === 'employee'}}" class="identity-card">
+      <image wx:if="{{employeeAuth.avatarUrl}}" class="identity-avatar" src="{{employeeAuth.avatarUrl}}" mode="aspectFill" />
+      <view>
+        <view class="muted">员工端</view>
+        <view class="identity-name">{{employeeAuth.nickname || currentStaffName || '未选择员工'}}</view>
+      </view>
+    </view>
+
+    <picker wx:if="{{role === 'admin'}}" mode="selector" range="{{staff}}" range-key="name" bindchange="selectStaff">
+      <view class="select-box">{{selectedStaffName || '选择员工'}}</view>
+    </picker>
+
+    <picker mode="selector" range="{{shifts}}" range-key="name" bindchange="selectShift">
+      <view class="select-box">{{selectedShiftName || '选择班次'}}</view>
+    </picker>
+
+    <view class="actions">
+      <button class="btn btn-primary" loading="{{locating}}" bindtap="clockIn"><text class="btn-icon">↑</text>上班打卡</button>
+      <button class="btn btn-ghost" loading="{{locating}}" bindtap="clockOut"><text class="btn-icon">↓</text>下班打卡</button>
+    </view>
+    <view class="muted location-tip">打卡时会获取当前位置，并自动匹配最近的可打卡门店。</view>
+  </view>
+
+  <view wx:if="{{employeeReady}}" class="record-list">
+    <view class="section-title list-title">{{role === 'admin' ? '今日打卡记录' : '我的今日记录'}}</view>
+    <view wx:if="{{!records.length}}" class="empty-card">暂无打卡记录</view>
+    <view wx:for="{{records}}" wx:key="id" class="record-card">
+      <view>
+        <view class="record-main">{{item.staffName}} · {{item.shiftName}}</view>
+        <view class="muted">{{item.storeName}} · {{item.distance || '-'}} 米</view>
+        <view class="muted">{{item.date}}</view>
+      </view>
+      <view class="record-time">
+        <view>上班：{{item.clockIn || '-'}}</view>
+        <view>下班：{{item.clockOut || '-'}}</view>
+      </view>
+    </view>
+  </view>
+</view>

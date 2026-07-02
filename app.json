@@ -1,0 +1,53 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/schedule/schedule",
+    "pages/attendance/attendance",
+    "pages/staff/staff",
+    "pages/settings/settings"
+  ],
+  "window": {
+    "navigationBarTitleText": "班次小助手",
+    "navigationBarBackgroundColor": "#f5f5f7",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f5f5f7"
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于员工打卡时自动匹配附近门店"
+    }
+  },
+  "requiredPrivateInfos": [
+    "getLocation",
+    "chooseLocation"
+  ],
+  "tabBar": {
+    "color": "#86868b",
+    "selectedColor": "#111111",
+    "backgroundColor": "#fbfbfd",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "工作台"
+      },
+      {
+        "pagePath": "pages/schedule/schedule",
+        "text": "班表"
+      },
+      {
+        "pagePath": "pages/attendance/attendance",
+        "text": "打卡"
+      },
+      {
+        "pagePath": "pages/staff/staff",
+        "text": "员工"
+      },
+      {
+        "pagePath": "pages/settings/settings",
+        "text": "设置"
+      }
+    ]
+  },
+  "style": "v2"
+}

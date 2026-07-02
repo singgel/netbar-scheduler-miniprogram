@@ -1,0 +1,109 @@
+.today {
+  margin: 8rpx 0 18rpx;
+}
+
+.select-box {
+  min-height: 82rpx;
+  display: flex;
+  align-items: center;
+  border: 1rpx solid rgba(0, 0, 0, 0.08);
+  border-radius: 18rpx;
+  padding: 0 24rpx;
+  margin-top: 14rpx;
+  background: #f5f5f7;
+  color: #1d1d1f;
+}
+
+.identity-card {
+  min-height: 96rpx;
+  background: #fbfbfd;
+  border: 1rpx solid rgba(0, 0, 0, 0.06);
+  border-radius: 22rpx;
+  padding: 18rpx 20rpx;
+  box-sizing: border-box;
+  margin-top: 14rpx;
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+}
+
+.identity-avatar {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 20rpx;
+  background: #e8e8ed;
+  flex-shrink: 0;
+}
+
+.identity-name {
+  color: #1d1d1f;
+  font-size: 32rpx;
+  font-weight: 800;
+  margin-top: 4rpx;
+}
+
+.guard-panel {
+  display: grid;
+  gap: 16rpx;
+}
+
+.guard-btn {
+  margin-top: 8rpx;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
+.record-list {
+  margin-top: 24rpx;
+}
+
+.location-tip {
+  margin-top: 14rpx;
+  font-size: 24rpx;
+}
+
+.list-title {
+  margin-bottom: 14rpx;
+}
+
+.empty-card,
+.record-card {
+  background: #ffffff;
+  border: 1rpx solid rgba(0, 0, 0, 0.06);
+  border-radius: 22rpx;
+  padding: 24rpx;
+  box-sizing: border-box;
+  box-shadow: 0 12rpx 34rpx rgba(0, 0, 0, 0.04);
+}
+
+.empty-card {
+  color: #94a3b8;
+}
+
+.record-card {
+  min-height: 112rpx;
+  display: flex;
+  justify-content: space-between;
+  gap: 18rpx;
+  margin-bottom: 14rpx;
+}
+
+.record-main {
+  color: #1d1d1f;
+  font-size: 30rpx;
+  font-weight: 800;
+  margin-bottom: 6rpx;
+}
+
+.record-time {
+  color: #515154;
+  font-size: 24rpx;
+  line-height: 36rpx;
+  text-align: right;
+  flex-shrink: 0;
+}

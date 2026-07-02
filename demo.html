@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>班次小助手 Demo</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #f5f7fb;
+      color: #1f2937;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    }
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+    }
+    .sidebar {
+      background: #14213d;
+      color: #fff;
+      padding: 28px 20px;
+    }
+    .brand {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 28px;
+    }
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+    .nav button {
+      height: 44px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #cbd5e1;
+      text-align: left;
+      padding: 0 14px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .nav button.active {
+      background: #006d77;
+      color: #fff;
+      font-weight: 700;
+    }
+    main {
+      padding: 28px;
+      overflow: hidden;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.2;
+    }
+    .muted {
+      color: #6b7280;
+      font-size: 14px;
+    }
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    button {
+      height: 40px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: #fff;
+      color: #374151;
+      padding: 0 14px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button.primary {
+      border-color: #006d77;
+      background: #006d77;
+      color: #fff;
+      font-weight: 700;
+    }
+    button.danger {
+      border-color: #fecdd3;
+      background: #fff1f2;
+      color: #be123c;
+    }
+    .calendar-wrap {
+      overflow: auto;
+      border: 1px solid #d9dee8;
+      border-radius: 8px;
+      background: #fff;
+      max-height: calc(100vh - 130px);
+    }
+    .calendar {
+      min-width: 980px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 130px repeat(3, 1fr);
+    }
+    .head {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #14213d;
+      color: #fff;
+      font-weight: 800;
+    }
+    .cell {
+      min-height: 112px;
+      padding: 12px;
+      border-top: 1px solid #e5e7eb;
+      border-right: 4px solid #111827;
+    }
+    .head .cell {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-top: 0;
+    }
+    .date {
+      background: #f8fafc;
+      text-align: center;
+      border-right: 4px solid #111827;
+    }
+    .weekend .date {
+      background: #fff7ed;
+    }
+    .day {
+      font-size: 24px;
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+    .shift-time {
+      color: #475569;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    .people {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 34px;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .empty {
+      color: #94a3b8;
+      font-size: 13px;
+    }
+    .cell-edit {
+      height: 30px;
+      margin-top: 10px;
+      border-color: #b8dfe0;
+      color: #006d77;
+      padding: 0 10px;
+    }
+    .panel {
+      max-width: 780px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .form {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+    input {
+      height: 40px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 0 12px;
+      font-size: 14px;
+    }
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+    .row {
+      min-height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-top: 1px solid #eef2f7;
+    }
+    .row-title {
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .stepper {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .stepper button {
+      width: 42px;
+      border: 0;
+      border-radius: 0;
+    }
+    .need {
+      width: 42px;
+      text-align: center;
+      font-weight: 900;
+    }
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, .45);
+      padding: 20px;
+      z-index: 20;
+    }
+    .modal.open {
+      display: flex;
+    }
+    .dialog {
+      width: min(520px, 100%);
+      max-height: 82vh;
+      overflow: auto;
+      background: #fff;
+      border-radius: 8px;
+      padding: 22px;
+    }
+    .staff-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 58px;
+      border-top: 1px solid #eef2f7;
+      cursor: pointer;
+    }
+    .check {
+      min-width: 64px;
+      height: 30px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      color: #64748b;
+      text-align: center;
+      line-height: 30px;
+      font-size: 13px;
+    }
+    .check.checked {
+      background: #006d77;
+      color: #fff;
+    }
+    @media (max-width: 820px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { padding: 18px; }
+      .nav { grid-template-columns: repeat(3, 1fr); }
+      main { padding: 18px; }
+      .form { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">班次小助手</div>
+      <div class="nav">
+        <button class="active" data-view="schedule">班表</button>
+        <button data-view="attendance">员工打卡</button>
+        <button data-view="staff">员工管理</button>
+        <button data-view="settings">班次设置</button>
+      </div>
+    </aside>
+    <main id="app"></main>
+  </div>
+  <div class="modal" id="modal"></div>
+
+  <script>
+    const store = {
+      staff: [
+        { id: 's1', name: '员工1', role: '收银', maxPerWeek: 6 },
+        { id: 's2', name: '员工2', role: '网管', maxPerWeek: 6 },
+        { id: 's3', name: '员工3', role: '网管', maxPerWeek: 6 },
+        { id: 's4', name: '员工4', role: '保洁', maxPerWeek: 5 },
+        { id: 's5', name: '员工5', role: '值班店长', maxPerWeek: 6 }
+      ],
+      shifts: [
+        { id: 'morning', name: '早班', time: '08:00-16:00', need: 2, color: '#eaf6ff' },
+        { id: 'middle', name: '中班', time: '16:00-00:00', need: 2, color: '#f2f7e8' },
+        { id: 'night', name: '夜班', time: '00:00-08:00', need: 1, color: '#f8eefc' }
+      ],
+      schedule: JSON.parse(localStorage.getItem('netbar_demo_schedule') || '{}'),
+      attendance: JSON.parse(localStorage.getItem('netbar_demo_attendance') || '[]'),
+      view: 'schedule',
+      year: 2026,
+      month: 6
+    };
+
+    function saveSchedule() {
+      localStorage.setItem('netbar_demo_schedule', JSON.stringify(store.schedule));
+    }
+
+    function saveAttendance() {
+      localStorage.setItem('netbar_demo_attendance', JSON.stringify(store.attendance));
+    }
+
+    function pad(num) { return num < 10 ? `0${num}` : `${num}`; }
+    function dateKey(year, month, day) { return `${year}-${pad(month)}-${pad(day)}`; }
+    function monthText() { return `${store.year}年${pad(store.month)}月`; }
+
+    function daysInMonth() {
+      const total = new Date(store.year, store.month, 0).getDate();
+      const weeks = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+      return Array.from({ length: total }, (_, index) => {
+        const day = index + 1;
+        const d = new Date(store.year, store.month - 1, day);
+        return { date: dateKey(store.year, store.month, day), day, week: weeks[d.getDay()], weekend: d.getDay() === 0 || d.getDay() === 6 };
+      });
+    }
+
+    function generateSchedule() {
+      const usage = {};
+      let cursor = 0;
+      daysInMonth().forEach(day => {
+        const daily = {};
+        const usedToday = {};
+        store.shifts.forEach(shift => {
+          daily[shift.id] = [];
+          for (let i = 0; i < shift.need; i += 1) {
+            const candidates = store.staff.filter(person => !usedToday[person.id]);
+            const pool = candidates.length ? candidates : store.staff;
+            const sorted = pool.slice().sort((a, b) => (usage[a.id] || 0) - (usage[b.id] || 0));
+            const picked = sorted[cursor % sorted.length];
+            cursor += 1;
+            if (picked) {
+              usage[picked.id] = (usage[picked.id] || 0) + 1;
+              usedToday[picked.id] = true;
+              daily[shift.id].push(picked.id);
+            }
+          }
+        });
+        store.schedule[day.date] = daily;
+      });
+      saveSchedule();
+      render();
+    }
+
+    function names(ids) {
+      return ids.map(id => (store.staff.find(item => item.id === id) || {}).name || '未知员工');
+    }
+
+    function renderSchedule() {
+      const app = document.querySelector('#app');
+      const rows = daysInMonth().map(day => {
+        const daily = store.schedule[day.date] || {};
+        const cells = store.shifts.map(shift => {
+          const people = names(daily[shift.id] || []);
+          return `<div class="cell" style="background:${shift.color}">
+            <div class="shift-time">${shift.time}</div>
+            <div class="people">${people.length ? people.map(name => `<span class="tag">${name}</span>`).join('') : '<span class="empty">未排</span>'}</div>
+            <button class="cell-edit" data-edit="${day.date}|${shift.id}">调整</button>
+          </div>`;
+        }).join('');
+        return `<div class="grid ${day.weekend ? 'weekend' : ''}">
+          <div class="cell date"><div class="day">${day.day}日</div><div class="muted">${day.week}</div></div>${cells}
+        </div>`;
+      }).join('');
+      app.innerHTML = `<div class="topbar">
+        <div><h1>${monthText()}班表</h1><div class="muted">按天查看早班、中班、夜班安排</div></div>
+        <div class="actions">
+          <button data-prev>上月</button>
+          <button data-next>下月</button>
+          <button class="primary" data-auto>自动生成</button>
+          <button class="danger" data-clear>清空本月</button>
+        </div>
+      </div>
+      <div class="calendar-wrap">
+        <div class="calendar">
+          <div class="grid head"><div class="cell">日期</div>${store.shifts.map(s => `<div class="cell">${s.name}</div>`).join('')}</div>
+          ${rows}
+        </div>
+      </div>`;
+    }
+
+    function renderStaff() {
+      document.querySelector('#app').innerHTML = `<div class="topbar"><div><h1>员工管理</h1><div class="muted">维护员工和岗位信息</div></div></div>
+        <div class="panel">
+          <div class="form">
+            <input id="name" placeholder="姓名">
+            <input id="role" placeholder="岗位">
+            <input id="max" type="number" placeholder="每周最多班次">
+            <button class="primary" data-add-staff>添加员工</button>
+          </div>
+        </div>
+        <div class="panel list">
+          ${store.staff.map(item => `<div class="row">
+            <div><div class="row-title">${item.name}</div><div class="muted">${item.role} · 每周最多 ${item.maxPerWeek} 班</div></div>
+            <button class="danger" data-del-staff="${item.id}">删除</button>
+          </div>`).join('')}
+        </div>`;
+    }
+
+    function currentDateText() {
+      const now = new Date();
+      return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    }
+
+    function currentTimeText() {
+      const now = new Date();
+      return `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    }
+
+    function renderAttendance() {
+      const today = currentDateText();
+      const rows = store.attendance
+        .filter(item => item.date === today)
+        .slice()
+        .reverse()
+        .map(item => {
+          const staff = store.staff.find(person => person.id === item.staffId);
+          const shift = store.shifts.find(s => s.id === item.shiftId);
+          return `<div class="row">
+            <div><div class="row-title">${staff ? staff.name : '未知员工'} · ${shift ? shift.name : '未知班次'}</div><div class="muted">${item.date}</div></div>
+            <div class="muted" style="text-align:right">上班：${item.clockIn || '-'}<br>下班：${item.clockOut || '-'}</div>
+          </div>`;
+        }).join('');
+      document.querySelector('#app').innerHTML = `<div class="topbar"><div><h1>员工打卡</h1><div class="muted">${today} · 上下班打卡记录</div></div></div>
+        <div class="panel">
+          <div class="form" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+            <select id="att-staff" style="height:40px;border:1px solid #d1d5db;border-radius:8px;padding:0 10px;">
+              <option value="">选择员工</option>
+              ${store.staff.map(item => `<option value="${item.id}">${item.name} · ${item.role}</option>`).join('')}
+            </select>
+            <select id="att-shift" style="height:40px;border:1px solid #d1d5db;border-radius:8px;padding:0 10px;">
+              <option value="">选择班次</option>
+              ${store.shifts.map(item => `<option value="${item.id}">${item.name} · ${item.time}</option>`).join('')}
+            </select>
+            <button class="primary" data-clock-in>上班打卡</button>
+            <button data-clock-out>下班打卡</button>
+          </div>
+        </div>
+        <div class="panel list">${rows || '<div class="muted">暂无打卡记录</div>'}</div>`;
+    }
+
+    function renderSettings() {
+      document.querySelector('#app').innerHTML = `<div class="topbar"><div><h1>班次设置</h1><div class="muted">设置每个班次需要几个人</div></div></div>
+        <div class="panel">
+          ${store.shifts.map(item => `<div class="row">
+            <div><div class="row-title">${item.name}</div><div class="muted">${item.time}</div></div>
+            <div class="stepper"><button data-need="${item.id}|-1">-</button><div class="need">${item.need}</div><button data-need="${item.id}|1">+</button></div>
+          </div>`).join('')}
+        </div>
+        <div class="panel"><button class="danger" data-reset>清空全部班表</button></div>`;
+    }
+
+    function render() {
+      document.querySelectorAll('.nav button').forEach(btn => btn.classList.toggle('active', btn.dataset.view === store.view));
+      if (store.view === 'schedule') renderSchedule();
+      if (store.view === 'attendance') renderAttendance();
+      if (store.view === 'staff') renderStaff();
+      if (store.view === 'settings') renderSettings();
+    }
+
+    function openEditor(date, shiftId) {
+      const shift = store.shifts.find(item => item.id === shiftId);
+      const selected = new Set(((store.schedule[date] || {})[shiftId] || []));
+      const modal = document.querySelector('#modal');
+      modal.classList.add('open');
+      modal.innerHTML = `<div class="dialog">
+        <h1>选择伙伴</h1>
+        <div class="muted">${date} · ${shift.name}</div>
+        <div style="margin:16px 0">
+          ${store.staff.map(item => `<div class="staff-option" data-pick="${item.id}">
+            <div><div class="row-title">${item.name}</div><div class="muted">${item.role}</div></div>
+            <div class="check ${selected.has(item.id) ? 'checked' : ''}">${selected.has(item.id) ? '已选' : '选择'}</div>
+          </div>`).join('')}
+        </div>
+        <div class="actions"><button class="primary" data-save-picker>保存</button><button data-close>取消</button></div>
+      </div>`;
+      modal.querySelectorAll('[data-pick]').forEach(row => {
+        row.addEventListener('click', () => {
+          const id = row.dataset.pick;
+          if (selected.has(id)) selected.delete(id); else selected.add(id);
+          row.querySelector('.check').classList.toggle('checked', selected.has(id));
+          row.querySelector('.check').textContent = selected.has(id) ? '已选' : '选择';
+        });
+      });
+      modal.querySelector('[data-save-picker]').addEventListener('click', () => {
+        store.schedule[date] = store.schedule[date] || {};
+        store.schedule[date][shiftId] = [...selected];
+        saveSchedule();
+        modal.classList.remove('open');
+        render();
+      });
+      modal.querySelector('[data-close]').addEventListener('click', () => modal.classList.remove('open'));
+    }
+
+    document.addEventListener('click', event => {
+      const target = event.target.closest('button, [data-edit]');
+      if (!target) return;
+      if (target.dataset.view) { store.view = target.dataset.view; render(); }
+      if (target.dataset.prev !== undefined) { store.month -= 1; if (store.month < 1) { store.month = 12; store.year -= 1; } render(); }
+      if (target.dataset.next !== undefined) { store.month += 1; if (store.month > 12) { store.month = 1; store.year += 1; } render(); }
+      if (target.dataset.auto !== undefined) generateSchedule();
+      if (target.dataset.clear !== undefined) { daysInMonth().forEach(day => delete store.schedule[day.date]); saveSchedule(); render(); }
+      if (target.dataset.edit) { const [date, shift] = target.dataset.edit.split('|'); openEditor(date, shift); }
+      if (target.dataset.clockIn !== undefined) {
+        const staffId = document.querySelector('#att-staff').value;
+        const shiftId = document.querySelector('#att-shift').value;
+        if (!staffId || !shiftId) return alert('请选择员工和班次');
+        const today = currentDateText();
+        const existing = store.attendance.find(item => item.date === today && item.staffId === staffId && item.shiftId === shiftId);
+        if (existing && existing.clockIn) return alert('已上班打卡');
+        store.attendance.push({ id: `a${Date.now()}`, date: today, staffId, shiftId, clockIn: currentTimeText(), clockOut: '' });
+        saveAttendance();
+        render();
+      }
+      if (target.dataset.clockOut !== undefined) {
+        const staffId = document.querySelector('#att-staff').value;
+        const shiftId = document.querySelector('#att-shift').value;
+        if (!staffId || !shiftId) return alert('请选择员工和班次');
+        const today = currentDateText();
+        const record = store.attendance.find(item => item.date === today && item.staffId === staffId && item.shiftId === shiftId);
+        if (!record) return alert('请先上班打卡');
+        record.clockOut = currentTimeText();
+        saveAttendance();
+        render();
+      }
+      if (target.dataset.addStaff !== undefined) {
+        const name = document.querySelector('#name').value.trim();
+        if (!name) return;
+        store.staff.push({ id: `s${Date.now()}`, name, role: document.querySelector('#role').value.trim() || '员工', maxPerWeek: Number(document.querySelector('#max').value) || 6 });
+        render();
+      }
+      if (target.dataset.delStaff) { store.staff = store.staff.filter(item => item.id !== target.dataset.delStaff); render(); }
+      if (target.dataset.need) {
+        const [id, delta] = target.dataset.need.split('|');
+        store.shifts = store.shifts.map(item => item.id === id ? { ...item, need: Math.max(1, item.need + Number(delta)) } : item);
+        render();
+      }
+      if (target.dataset.reset !== undefined) { store.schedule = {}; saveSchedule(); render(); }
+    });
+
+    render();
+  </script>
+</body>
+</html>

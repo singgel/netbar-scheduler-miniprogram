@@ -1,0 +1,73 @@
+<view class="page">
+  <view wx:if="{{role !== 'admin'}}" class="panel guard-panel">
+    <view class="section-title">员工端无需配置规则</view>
+    <view class="muted">班次人数和数据维护由管理端处理。</view>
+    <navigator class="btn btn-primary guard-btn" url="/pages/home/home" open-type="switchTab"><text class="btn-icon">←</text>回到工作台</navigator>
+  </view>
+
+  <view wx:if="{{role === 'admin'}}" class="section-label">门店</view>
+  <view wx:if="{{role === 'admin'}}" class="panel">
+    <view class="section-title">门店管理</view>
+    <view class="muted tip">设置门店坐标和允许打卡半径，员工打卡时会自动匹配最近门店。</view>
+
+    <view class="store-form">
+      <input class="input" placeholder="门店名称" value="{{storeForm.name}}" data-field="name" bindinput="onStoreInput" />
+      <input class="input" placeholder="门店地址" value="{{storeForm.address}}" data-field="address" bindinput="onStoreInput" />
+      <view class="coord-grid">
+        <input class="input" type="digit" placeholder="纬度" value="{{storeForm.latitude}}" data-field="latitude" bindinput="onStoreInput" />
+        <input class="input" type="digit" placeholder="经度" value="{{storeForm.longitude}}" data-field="longitude" bindinput="onStoreInput" />
+      </view>
+      <input class="input" type="number" placeholder="打卡半径，默认 200 米" value="{{storeForm.checkinRadius}}" data-field="checkinRadius" bindinput="onStoreInput" />
+      <view class="store-actions">
+        <button class="btn btn-ghost" bindtap="chooseStoreLocation"><text class="btn-icon">◎</text>地图选点</button>
+        <button class="btn btn-primary" bindtap="addStore"><text class="btn-icon">+</text>新增门店</button>
+      </view>
+    </view>
+
+    <view class="store-list list-panel">
+      <view wx:for="{{stores}}" wx:key="id" class="store-card">
+        <view>
+          <view class="store-name">{{item.name}}</view>
+          <view class="muted">{{item.address || '未填写地址'}}</view>
+          <view class="muted">{{item.latitude}}, {{item.longitude}} · {{item.checkinRadius}} 米</view>
+        </view>
+        <view class="store-card-actions">
+          <button class="small-btn {{currentStoreId === item.id ? 'active-store' : ''}}" data-id="{{item.id}}" bindtap="useStore">{{currentStoreId === item.id ? '✓' : '设为当前'}}</button>
+          <button class="small-btn delete-store" data-id="{{item.id}}" bindtap="deleteStore">×</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{role === 'admin'}}" class="section-label">规则</view>
+  <view wx:if="{{role === 'admin'}}" class="panel config-panel">
+    <view class="section-title">班次人数</view>
+    <view class="muted tip">设置每个班次需要几个人，自动班表会按这里生成。</view>
+    <view wx:for="{{shifts}}" wx:key="id" class="shift-config">
+      <view>
+        <view class="shift-name">{{item.name}}</view>
+        <view class="muted">{{item.time}}</view>
+      </view>
+      <view class="stepper">
+        <button class="step-btn" data-id="{{item.id}}" data-delta="-1" bindtap="changeNeed">−</button>
+        <view class="need">{{item.need}}</view>
+        <button class="step-btn" data-id="{{item.id}}" data-delta="1" bindtap="changeNeed">+</button>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{role === 'admin'}}" class="section-label">测试</view>
+  <view wx:if="{{role === 'admin'}}" class="panel danger-panel">
+    <view class="section-title">测试工具</view>
+    <view class="muted tip">用于体验版测试同一台手机在管理端和员工端之间切换。</view>
+    <button class="btn btn-ghost" bindtap="toggleDebugRoleSwitch"><text class="btn-icon">{{debugRoleSwitch ? '−' : '+'}}</text>{{debugRoleSwitch ? '关闭角色切换入口' : '开启角色切换入口'}}</button>
+    <button class="btn btn-ghost" bindtap="clearEmployeeBind"><text class="btn-icon">×</text>清除本机员工绑定</button>
+  </view>
+
+  <view wx:if="{{role === 'admin'}}" class="section-label">维护</view>
+  <view wx:if="{{role === 'admin'}}" class="panel danger-panel">
+    <view class="section-title">数据维护</view>
+    <button class="btn btn-ghost" bindtap="resetDemo"><text class="btn-icon">↻</text>恢复演示数据</button>
+    <button class="btn btn-danger danger-btn" bindtap="clearAll"><text class="btn-icon">×</text>清空全部班表</button>
+  </view>
+</view>

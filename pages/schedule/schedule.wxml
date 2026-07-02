@@ -1,0 +1,72 @@
+<view class="page schedule-page">
+  <view class="topbar">
+    <view>
+      <view class="title">{{monthText}}</view>
+      <view class="muted">{{role === 'admin' ? '管理端：查看和调整全部班次安排' : '员工端：只显示我的班次'}}</view>
+      <view wx:if="{{role === 'admin'}}" class="mine-tag">当前门店：{{currentStoreName || '未选择'}}</view>
+      <view wx:if="{{role === 'employee'}}" class="mine-tag">当前员工：{{currentStaffName || '未选择'}}</view>
+    </view>
+    <view class="month-actions">
+      <button class="mini-btn icon-only" bindtap="prevMonth">‹</button>
+      <button class="mini-btn icon-only" bindtap="nextMonth">›</button>
+    </view>
+  </view>
+
+  <view wx:if="{{role === 'admin'}}" class="toolbar">
+    <button class="btn btn-primary" bindtap="autoSchedule"><text class="btn-icon">+</text>生成本月班表</button>
+    <button class="btn btn-ghost" bindtap="clearMonth"><text class="btn-icon">×</text>清空</button>
+  </view>
+
+  <view wx:if="{{role === 'employee' && !employeeReady}}" class="empty-state">
+    <view class="section-title">请先完成员工登录</view>
+    <view class="muted">需要授权头像昵称和手机号后，才能查看个人班次。</view>
+    <navigator class="btn btn-primary guard-btn" url="/pages/home/home" open-type="switchTab"><text class="btn-icon">←</text>回到工作台</navigator>
+  </view>
+
+  <view wx:elif="{{role === 'employee' && !rows.length}}" class="empty-state">
+    <view class="section-title">本月暂无我的班次</view>
+    <view class="muted">可以回到工作台切换员工，或让管理员生成本月安排。</view>
+  </view>
+
+  <scroll-view wx:if="{{employeeReady}}" class="calendar-scroll" scroll-x enhanced>
+    <view class="calendar {{role === 'employee' ? 'employee-calendar' : ''}}">
+      <view class="grid header-row">
+        <view class="name-cell header-cell">日期</view>
+        <view wx:if="{{role === 'admin'}}" wx:for="{{shifts}}" wx:key="id" class="shift-head header-cell">{{item.name}}</view>
+        <view wx:if="{{role === 'employee'}}" class="shift-head header-cell">我的班次</view>
+      </view>
+
+      <view wx:for="{{rows}}" wx:key="date" class="grid day-row {{item.isWeekend ? 'weekend-row' : ''}}">
+        <view class="name-cell date-cell">
+          <view class="date-main">{{item.day}}日</view>
+          <view class="date-week">{{item.week}}</view>
+        </view>
+        <view wx:for="{{item.shifts}}" wx:for-item="shift" wx:key="id" class="shift-cell" style="background: {{shift.color}}">
+          <view class="shift-time">{{shift.time}}</view>
+          <view class="people">
+            <text wx:if="{{!shift.names.length}}" class="empty">未排</text>
+            <text wx:for="{{shift.names}}" wx:for-item="name" wx:key="*this" class="person">{{name}}</text>
+          </view>
+          <button wx:if="{{role === 'admin'}}" class="cell-btn" data-date="{{item.date}}" data-shift="{{shift.id}}" bindtap="openPicker">···</button>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view wx:if="{{pickerVisible}}" class="sheet-mask" bindtap="closePicker">
+    <view class="sheet" catchtap="noop">
+      <view class="sheet-title">选择伙伴</view>
+      <view class="muted sheet-subtitle">{{activeDate}} · {{activeShiftName}}</view>
+      <view class="staff-options">
+        <view wx:for="{{staffOptions}}" wx:key="id" class="staff-option" data-id="{{item.id}}" bindtap="toggleStaff">
+          <view>
+            <view class="staff-name">{{item.name}}</view>
+            <view class="muted">{{item.role}}</view>
+          </view>
+          <view class="check {{item.checked ? 'checked' : ''}}">{{item.checked ? '✓' : '+'}}</view>
+        </view>
+      </view>
+      <button class="btn btn-primary" bindtap="savePicker"><text class="btn-icon">✓</text>保存</button>
+    </view>
+  </view>
+</view>

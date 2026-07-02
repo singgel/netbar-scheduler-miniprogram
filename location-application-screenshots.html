@@ -1,0 +1,357 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>班次小助手定位申请截图</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      width: 390px;
+      height: 844px;
+      background: #f5f7fb;
+      color: #1f2937;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    }
+    .phone {
+      width: 390px;
+      min-height: 844px;
+      background: #f5f7fb;
+      overflow: hidden;
+    }
+    .status {
+      height: 34px;
+      background: #14213d;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      font-size: 12px;
+    }
+    .nav {
+      height: 50px;
+      background: #14213d;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+      position: relative;
+    }
+    .nav .capsule {
+      position: absolute;
+      right: 12px;
+      top: 10px;
+      border: 1px solid rgba(255,255,255,.45);
+      border-radius: 18px;
+      padding: 4px 9px;
+      font-size: 15px;
+      letter-spacing: 2px;
+    }
+    .page {
+      padding: 14px;
+      padding-bottom: 86px;
+    }
+    .panel {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #111827;
+      margin-bottom: 5px;
+    }
+    .sub {
+      color: #6b7280;
+      font-size: 13px;
+      line-height: 20px;
+    }
+    .input {
+      height: 42px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      color: #374151;
+      background: #fff;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .btn {
+      height: 42px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      border: 0;
+    }
+    .primary { background: #006d77; color: #fff; }
+    .ghost { background: #eef6f6; color: #006d77; }
+    .store-card, .record-card {
+      border-top: 1px solid #eef2f7;
+      padding: 13px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .store-name, .record-main {
+      color: #111827;
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .small-btn {
+      width: 72px;
+      height: 30px;
+      border-radius: 7px;
+      background: #006d77;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .danger { background: #fff1f2; color: #be123c; margin-top: 6px; }
+    .identity {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #8ecae6, #006d77);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+    }
+    .identity-name {
+      color: #0f766e;
+      font-size: 18px;
+      font-weight: 800;
+      margin-top: 2px;
+    }
+    .select {
+      height: 44px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+      background: #fff;
+      font-size: 14px;
+    }
+    .tip {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 13px;
+      line-height: 20px;
+    }
+    .success {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border-radius: 6px;
+      background: #dcfce7;
+      color: #166534;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .tabbar {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      width: 390px;
+      height: 64px;
+      background: #fff;
+      border-top: 1px solid #e5e7eb;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      color: #64748b;
+      font-size: 12px;
+    }
+    .tab {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      background: #cbd5e1;
+    }
+    .tab.active { color: #006d77; font-weight: 800; }
+    .tab.active .dot { background: #006d77; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div id="settings" class="phone hidden">
+    <div class="status"><span>15:30</span><span>5G 100%</span></div>
+    <div class="nav">班次设置 <span class="capsule">••• ○</span></div>
+    <div class="page">
+      <div class="panel">
+        <div class="title">门店管理</div>
+        <div class="sub">设置门店坐标和允许打卡半径，员工打卡时会自动匹配最近门店。</div>
+        <div class="input">一号门店</div>
+        <div class="input">深圳市南山区科技园示例地址</div>
+        <div class="grid2">
+          <div class="input">22.5431</div>
+          <div class="input">113.9380</div>
+        </div>
+        <div class="input">打卡半径：200 米</div>
+        <div class="actions">
+          <div class="btn ghost">地图选点</div>
+          <div class="btn primary">新增门店</div>
+        </div>
+        <div class="store-card">
+          <div>
+            <div class="store-name">一号门店</div>
+            <div class="sub">深圳市南山区科技园示例地址</div>
+            <div class="sub">22.5431, 113.9380 · 200 米</div>
+          </div>
+          <div>
+            <div class="small-btn">当前</div>
+            <div class="small-btn danger">删除</div>
+          </div>
+        </div>
+        <div class="store-card">
+          <div>
+            <div class="store-name">二号门店</div>
+            <div class="sub">深圳市福田区示例地址</div>
+            <div class="sub">22.5386, 114.0579 · 150 米</div>
+          </div>
+          <div>
+            <div class="small-btn ghost">使用</div>
+            <div class="small-btn danger">删除</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="title">班次人数</div>
+        <div class="sub">不同门店可按实际情况维护班次人数。</div>
+      </div>
+    </div>
+    <div class="tabbar">
+      <div class="tab"><div class="dot"></div>工作台</div>
+      <div class="tab"><div class="dot"></div>班表</div>
+      <div class="tab"><div class="dot"></div>打卡</div>
+      <div class="tab"><div class="dot"></div>员工</div>
+      <div class="tab active"><div class="dot"></div>设置</div>
+    </div>
+  </div>
+
+  <div id="clock" class="phone hidden">
+    <div class="status"><span>15:30</span><span>5G 100%</span></div>
+    <div class="nav">员工打卡 <span class="capsule">••• ○</span></div>
+    <div class="page">
+      <div class="panel">
+        <div class="title">今日打卡</div>
+        <div class="sub">2026-07-01</div>
+        <div class="identity">
+          <div class="avatar">张</div>
+          <div>
+            <div class="sub">员工端</div>
+            <div class="identity-name">张三</div>
+          </div>
+        </div>
+        <div class="select">早班 08:00-16:00 <span>⌄</span></div>
+        <div class="actions">
+          <div class="btn primary">上班打卡</div>
+          <div class="btn ghost">下班打卡</div>
+        </div>
+        <div class="tip">仅在员工主动点击上班/下班打卡时获取当前位置，用于自动匹配最近门店并校验是否在允许打卡范围内。</div>
+      </div>
+      <div class="panel">
+        <div class="title">门店匹配说明</div>
+        <div class="sub">系统会在员工所属门店或当天被安排门店中，选择距离最近且在打卡半径内的门店。</div>
+      </div>
+    </div>
+    <div class="tabbar">
+      <div class="tab"><div class="dot"></div>工作台</div>
+      <div class="tab"><div class="dot"></div>班表</div>
+      <div class="tab active"><div class="dot"></div>打卡</div>
+      <div class="tab"><div class="dot"></div>员工</div>
+      <div class="tab"><div class="dot"></div>设置</div>
+    </div>
+  </div>
+
+  <div id="record" class="phone hidden">
+    <div class="status"><span>15:31</span><span>5G 100%</span></div>
+    <div class="nav">员工打卡 <span class="capsule">••• ○</span></div>
+    <div class="page">
+      <div class="panel success">
+        <div class="title">打卡成功</div>
+        <div class="sub">已自动匹配到最近可打卡门店，并记录本次距离。</div>
+      </div>
+      <div class="panel">
+        <div class="title">我的今日记录</div>
+        <div class="record-card">
+          <div>
+            <div class="record-main">张三 · 早班</div>
+            <div class="sub">一号门店 · 距离 38 米</div>
+            <div class="sub">2026-07-01</div>
+          </div>
+          <div style="text-align:right">
+            <div class="tag">范围内</div>
+            <div class="sub" style="margin-top:8px">上班：09:00:12</div>
+            <div class="sub">下班：-</div>
+          </div>
+        </div>
+        <div class="tip">记录留存门店、经纬度、距离和打卡时间，便于管理员核对异常打卡。</div>
+      </div>
+      <div class="panel">
+        <div class="title">定位使用范围</div>
+        <div class="sub">本功能不持续获取位置，只在打卡动作发生时调用 wx.getLocation。</div>
+      </div>
+    </div>
+    <div class="tabbar">
+      <div class="tab"><div class="dot"></div>工作台</div>
+      <div class="tab"><div class="dot"></div>班表</div>
+      <div class="tab active"><div class="dot"></div>打卡</div>
+      <div class="tab"><div class="dot"></div>员工</div>
+      <div class="tab"><div class="dot"></div>设置</div>
+    </div>
+  </div>
+  <script>
+    const screenName = new URLSearchParams(location.search).get('screen') || 'settings';
+    document.getElementById(screenName).classList.remove('hidden');
+  </script>
+</body>
+</html>

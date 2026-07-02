@@ -1,0 +1,35 @@
+<view class="page">
+  <view wx:if="{{role !== 'admin'}}" class="panel guard-panel">
+    <view class="section-title">员工端无需维护人员</view>
+    <view class="muted">如需新增或删除员工，请切换到管理端。</view>
+    <navigator class="btn btn-primary guard-btn" url="/pages/home/home" open-type="switchTab"><text class="btn-icon">←</text>回到工作台</navigator>
+  </view>
+
+  <view wx:if="{{role === 'admin'}}" class="section-label">入职</view>
+  <view wx:if="{{role === 'admin'}}" class="panel add-panel">
+    <view>
+      <view class="section-title">办理入职</view>
+      <view class="muted">新增员工默认归属：{{currentStoreName || '当前门店'}}</view>
+    </view>
+    <view class="form-group list-panel">
+      <input class="input form-input" placeholder="姓名" value="{{form.name}}" data-field="name" bindinput="onInput" />
+      <input class="input form-input" placeholder="岗位，例如收银/网管/店长" value="{{form.role}}" data-field="role" bindinput="onInput" />
+      <input class="input form-input" type="number" placeholder="手机号，用于员工端自动匹配" value="{{form.phone}}" data-field="phone" bindinput="onInput" />
+      <input class="input form-input" type="number" placeholder="每周最多班次数" value="{{form.maxPerWeek}}" data-field="maxPerWeek" bindinput="onInput" />
+    </view>
+    <button class="btn btn-primary" bindtap="addStaff"><text class="btn-icon">+</text>生成入职邀请</button>
+  </view>
+
+  <view wx:if="{{role === 'admin'}}" class="section-label">员工</view>
+  <view wx:if="{{role === 'admin'}}" class="staff-list list-panel">
+    <view wx:for="{{staff}}" wx:key="id" class="staff-card">
+      <view>
+        <view class="staff-name">{{item.name}}</view>
+        <view class="muted">{{item.role}} · {{item.phone || '未填手机号'}} · {{item.storeNames}} · 每周最多 {{item.maxPerWeek}} 班</view>
+        <view class="invite-line">入职码：{{item.inviteCode}} · {{item.statusText}}</view>
+      </view>
+      <button wx:if="{{item.status !== 'left'}}" class="delete-btn" data-id="{{item.id}}" bindtap="markLeft">×</button>
+      <button wx:else class="restore-btn" data-id="{{item.id}}" bindtap="restoreStaff">↻</button>
+    </view>
+  </view>
+</view>

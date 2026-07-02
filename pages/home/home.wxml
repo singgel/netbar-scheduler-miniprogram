@@ -1,0 +1,137 @@
+<view class="page">
+  <view class="hero">
+    <view>
+      <view class="eyebrow">班次小助手</view>
+      <view class="hero-title">{{role === 'admin' ? '管理端工作台' : '员工端工作台'}}</view>
+      <view class="muted hero-subtitle">{{role === 'admin' ? '维护人员、班次和整月安排' : '查看自己的班次并完成上下班打卡'}}</view>
+    </view>
+    <view class="role-pill">{{role === 'admin' ? '管理员' : '员工'}}</view>
+  </view>
+
+  <view class="section-label">身份</view>
+  <view class="panel grouped-panel">
+    <view class="section-title">选择使用身份</view>
+    <view wx:if="{{debugRoleSwitch}}" class="debug-switch">
+      <button class="mini-switch {{role === 'admin' ? 'active' : ''}}" bindtap="enterAdminForTest">管理端</button>
+      <button class="mini-switch {{role === 'employee' ? 'active' : ''}}" bindtap="enterEmployeeForTest">员工端</button>
+    </view>
+    <view class="role-grid">
+      <view class="role-card {{role === 'admin' ? 'active' : ''}}" data-role="admin" bindtap="switchRole">
+        <view class="role-main">
+          <view class="icon-tile dark">M</view>
+          <view>
+            <view class="role-name">管理端</view>
+            <view class="muted">安排班次与维护资料</view>
+          </view>
+        </view>
+        <view class="role-dot"></view>
+      </view>
+      <view class="role-card {{role === 'employee' ? 'active' : ''}}" data-role="employee" bindtap="switchRole">
+        <view class="role-main">
+          <view class="icon-tile">E</view>
+          <view>
+            <view class="role-name">员工端</view>
+            <view class="muted">查看班次与完成打卡</view>
+          </view>
+        </view>
+        <view class="role-dot"></view>
+      </view>
+    </view>
+
+    <view wx:if="{{role === 'admin'}}" class="store-picker">
+      <view class="field-label">当前门店</view>
+      <picker mode="selector" range="{{stores}}" range-key="name" value="{{currentStoreIndex}}" bindchange="selectStore">
+        <view class="select-box">{{currentStoreName || '选择门店'}}</view>
+      </picker>
+    </view>
+
+    <view wx:if="{{role === 'employee'}}" class="employee-login">
+      <view class="login-head">
+        <view>
+          <view class="section-title">{{employeeAuth.bound ? '员工工作台' : '员工入职注册'}}</view>
+          <view class="muted">{{employeeAuth.bound ? '已识别员工身份，可直接查看班次和打卡。' : '请通过入职码绑定员工档案，后续打开自动进入员工端。'}}</view>
+        </view>
+        <image wx:if="{{employeeAuth.avatarUrl}}" class="avatar" src="{{employeeAuth.avatarUrl}}" mode="aspectFill" />
+      </view>
+
+      <view wx:if="{{!employeeAuth.bound}}" class="staff-picker">
+        <view class="field-label">入职码</view>
+        <input class="input nickname-input" placeholder="扫码后自动带入，也可手动输入入职码" value="{{inviteCode}}" bindinput="onInviteInput" />
+        <view class="invite-status {{inviteMatched ? 'matched' : ''}}">{{inviteMatched ? '已匹配：' + currentStaffName : '等待匹配员工档案'}}</view>
+      </view>
+
+      <view class="login-row">
+        <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="chooseAvatar">
+          <text class="btn-icon">+</text>{{employeeAuth.avatarUrl ? '更换头像' : '选择微信头像'}}
+        </button>
+        <view class="status {{employeeAuth.avatarUrl ? 'done' : ''}}">{{employeeAuth.avatarUrl ? '已选择' : '待选择'}}</view>
+      </view>
+
+      <input class="input nickname-input" type="nickname" placeholder="填写微信昵称" value="{{employeeAuth.nickname}}" bindinput="onNicknameInput" />
+
+      <view class="login-row">
+        <button class="phone-btn" open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber"><text class="btn-icon">✓</text>授权手机号</button>
+        <view class="status {{phoneReady ? 'done' : ''}}">{{employeeAuth.phone ? employeeAuth.phone : (employeeAuth.manualPhone ? '已填写' : (phoneReady ? '已授权' : '待授权'))}}</view>
+      </view>
+
+      <view class="manual-phone">
+        <input class="input nickname-input" type="number" maxlength="11" placeholder="手机号授权失败时，可手动填写手机号" value="{{employeeAuth.manualPhone}}" bindinput="onManualPhoneInput" />
+        <view class="muted bind-tip">体验版可手动填写；正式上线后会通过后端用授权 code 自动换取手机号。</view>
+      </view>
+
+      <view wx:if="{{!inviteCode}}" class="staff-picker">
+        <view class="field-label">绑定员工档案</view>
+        <picker mode="selector" range="{{staff}}" range-key="name" value="{{currentStaffIndex}}" bindchange="selectStaff">
+          <view class="select-box">{{currentStaffName || '选择员工'}}</view>
+        </picker>
+        <view class="muted bind-tip">体验版可手动选择；正式使用建议通过入职码扫码绑定。</view>
+      </view>
+
+      <button class="btn btn-primary" bindtap="completeEmployeeBind"><text class="btn-icon">✓</text>{{employeeAuth.bound ? '刷新员工身份' : '完成入职注册'}}</button>
+    </view>
+  </view>
+
+  <view class="section-label">常用</view>
+  <view class="quick-grid list-panel">
+    <navigator wx:if="{{canUseEmployeeFeatures}}" class="quick-card" url="/pages/schedule/schedule" open-type="switchTab">
+      <view class="quick-main">
+        <view class="icon-tile blue">日</view>
+        <view>
+          <view class="quick-title">{{role === 'admin' ? '查看全店班表' : '我的班次'}}</view>
+          <view class="muted">{{role === 'admin' ? '按月查看和调整每天安排' : '只显示与我相关的安排'}}</view>
+        </view>
+      </view>
+      <view class="chevron">›</view>
+    </navigator>
+    <navigator wx:if="{{canUseEmployeeFeatures}}" class="quick-card" url="/pages/attendance/attendance" open-type="switchTab">
+      <view class="quick-main">
+        <view class="icon-tile green">✓</view>
+        <view>
+          <view class="quick-title">去打卡</view>
+          <view class="muted">记录上班和下班时间</view>
+        </view>
+      </view>
+      <view class="chevron">›</view>
+    </navigator>
+    <navigator wx:if="{{role === 'admin'}}" class="quick-card" url="/pages/staff/staff" open-type="switchTab">
+      <view class="quick-main">
+        <view class="icon-tile">人</view>
+        <view>
+          <view class="quick-title">员工维护</view>
+          <view class="muted">办理入职、离职与查看员工</view>
+        </view>
+      </view>
+      <view class="chevron">›</view>
+    </navigator>
+    <navigator wx:if="{{role === 'admin'}}" class="quick-card" url="/pages/settings/settings" open-type="switchTab">
+      <view class="quick-main">
+        <view class="icon-tile">S</view>
+        <view>
+          <view class="quick-title">门店与规则</view>
+          <view class="muted">维护门店位置和班次人数</view>
+        </view>
+      </view>
+      <view class="chevron">›</view>
+    </navigator>
+  </view>
+</view>

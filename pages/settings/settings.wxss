@@ -1,0 +1,144 @@
+.tip {
+  margin: 8rpx 0 12rpx;
+}
+
+.guard-panel {
+  display: grid;
+  gap: 16rpx;
+}
+
+.guard-btn {
+  margin-top: 8rpx;
+}
+
+.shift-config {
+  min-height: 112rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1rpx solid rgba(0, 0, 0, 0.06);
+}
+
+.config-panel {
+  margin-top: 20rpx;
+}
+
+.store-form {
+  display: grid;
+  gap: 14rpx;
+  margin-top: 18rpx;
+}
+
+.coord-grid,
+.store-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14rpx;
+}
+
+.store-list {
+  margin-top: 22rpx;
+  box-shadow: none;
+}
+
+.store-card {
+  min-height: 128rpx;
+  border-bottom: 1rpx solid rgba(0, 0, 0, 0.06);
+  padding: 22rpx 24rpx;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.store-card:last-child {
+  border-bottom: 0;
+}
+
+.store-name {
+  color: #1d1d1f;
+  font-size: 30rpx;
+  font-weight: 800;
+  margin-bottom: 6rpx;
+}
+
+.store-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  flex-shrink: 0;
+}
+
+.small-btn {
+  min-width: 58rpx;
+  height: 52rpx;
+  border-radius: 999rpx;
+  background: #f5f5f7;
+  color: #1d1d1f;
+  font-size: 24rpx;
+  font-weight: 700;
+  line-height: 52rpx;
+  padding: 0 18rpx;
+  box-shadow: inset 0 0 0 1rpx rgba(0, 0, 0, 0.06);
+}
+
+.active-store {
+  background: #111111;
+  color: #ffffff;
+  min-width: 52rpx;
+  padding: 0;
+}
+
+.delete-store {
+  width: 52rpx;
+  min-width: 52rpx;
+  background: #fff1f2;
+  color: #be123c;
+  padding: 0;
+}
+
+.shift-name {
+  color: #1d1d1f;
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  border: 1rpx solid rgba(0, 0, 0, 0.08);
+  border-radius: 999rpx;
+  overflow: hidden;
+  background: #f5f5f7;
+}
+
+.step-btn {
+  width: 72rpx;
+  height: 64rpx;
+  border-radius: 0;
+  background: transparent;
+  color: #1d1d1f;
+  font-size: 32rpx;
+  font-weight: 700;
+  line-height: 64rpx;
+  padding: 0;
+}
+
+.need {
+  width: 72rpx;
+  text-align: center;
+  color: #1d1d1f;
+  font-weight: 800;
+}
+
+.danger-panel {
+  margin-top: 20rpx;
+  display: grid;
+  gap: 16rpx;
+}
+
+.danger-btn {
+  background: #fff1f2;
+  color: #be123c;
+}
