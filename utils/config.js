@@ -1,6 +1,6 @@
-const API_BASE = 'http://127.0.0.1:3000';
+const API_BASE = 'http://114.67.227.98:8080';
 const CLOUD_ENV_ID = 'cloud1-d9g6y0rdyaa7aecd9';
-const USE_CLOUD_DATABASE = true;
+const USE_CLOUD_DATABASE = false;
 
 module.exports = {
   API_BASE,

@@ -1,10 +1,10 @@
 const defaultStaff = [
-  { id: 'super1', name: '超级管理员', role: '超级管理员', position: 'manager', phone: '15500000000', storeIds: ['store1', 'store2'], maxPerWeek: 6, status: 'active', inviteCode: '100000', openidBound: false },
-  { id: 's1', name: '员工1', role: '收银', phone: '', storeIds: ['store1'], maxPerWeek: 6, status: 'active', inviteCode: '100001', openidBound: true },
-  { id: 's2', name: '员工2', role: '网管', phone: '', storeIds: ['store1'], maxPerWeek: 6, status: 'active', inviteCode: '100002', openidBound: false },
-  { id: 's3', name: '员工3', role: '网管', phone: '', storeIds: ['store1', 'store2'], maxPerWeek: 6, status: 'active', inviteCode: '100003', openidBound: false },
-  { id: 's4', name: '员工4', role: '保洁', phone: '', storeIds: ['store2'], maxPerWeek: 5, status: 'active', inviteCode: '100004', openidBound: false },
-  { id: 's5', name: '员工5', role: '值班店长', phone: '', storeIds: ['store1'], maxPerWeek: 6, status: 'active', inviteCode: '100005', openidBound: false }
+  { id: 'super1', name: '超级管理员', role: '超级管理员', position: 'manager', phone: '15500000000', storeIds: ['store1', 'store2'], maxPerWeek: 6, status: 'active', inviteCode: '100000', avatarUrl: '', openidBound: false },
+  { id: 's1', name: '员工1', role: '收银', phone: '', storeIds: ['store1'], maxPerWeek: 6, status: 'active', inviteCode: '100001', avatarUrl: '', openidBound: true },
+  { id: 's2', name: '员工2', role: '网管', phone: '', storeIds: ['store1'], maxPerWeek: 6, status: 'active', inviteCode: '100002', avatarUrl: '', openidBound: false },
+  { id: 's3', name: '员工3', role: '网管', phone: '', storeIds: ['store1', 'store2'], maxPerWeek: 6, status: 'active', inviteCode: '100003', avatarUrl: '', openidBound: false },
+  { id: 's4', name: '员工4', role: '保洁', phone: '', storeIds: ['store2'], maxPerWeek: 5, status: 'active', inviteCode: '100004', avatarUrl: '', openidBound: false },
+  { id: 's5', name: '员工5', role: '值班店长', phone: '', storeIds: ['store1'], maxPerWeek: 6, status: 'active', inviteCode: '100005', avatarUrl: '', openidBound: false }
 ];
 
 const defaultStaffRoleRelations = [

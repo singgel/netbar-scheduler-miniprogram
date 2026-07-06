@@ -1,0 +1,42 @@
+<view class="page mine-page">
+  <view class="profile-hero">
+    <view class="profile-avatar-wrap" bindtap="chooseAvatar">
+      <image wx:if="{{avatarUrl}}" class="profile-avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
+      <view wx:else class="profile-avatar">{{profileInitial}}</view>
+      <view class="avatar-camera">+</view>
+    </view>
+    <view class="profile-main">
+      <view class="profile-name">{{staff.name || '未登录'}}</view>
+      <view class="profile-subtitle">{{roleText}} · {{phoneText}}</view>
+    </view>
+  </view>
+
+  <view class="mine-menu">
+    <view class="mine-menu-row" bindtap="openProfileDetail">
+      <view class="menu-icon icon-profile">人</view>
+      <view class="menu-main">
+        <view class="menu-title">个人信息</view>
+        <view class="menu-summary">{{roleText}} · {{phoneText}}</view>
+      </view>
+      <view class="menu-arrow">›</view>
+    </view>
+    <view class="mine-menu-row" bindtap="openStoresDetail">
+      <view class="menu-icon icon-store">店</view>
+      <view class="menu-main">
+        <view class="menu-title">所在门店</view>
+        <view class="menu-summary">{{storeSummary}}</view>
+      </view>
+      <view class="menu-arrow">›</view>
+    </view>
+    <view class="mine-menu-row" bindtap="openScheduleDetail">
+      <view class="menu-icon icon-schedule">日</view>
+      <view class="menu-main">
+        <view class="menu-title">本月排班</view>
+        <view class="menu-summary">{{scheduleSummary}}</view>
+      </view>
+      <view class="menu-arrow">›</view>
+    </view>
+  </view>
+
+  <button class="logout-action" bindtap="logout">退出登录</button>
+</view>

@@ -10,14 +10,6 @@
     <view class="staff-menu-item {{activeStaffMenu === 'list' ? 'active' : ''}}" data-menu="list" bindtap="switchStaffMenu">查看本店员工信息</view>
   </view>
 
-  <view wx:if="{{canManage}}" class="panel store-scope-panel">
-    <view class="field-label">当前管理门店</view>
-    <picker wx:if="{{isSuperAdmin}}" mode="selector" range="{{stores}}" range-key="name" bindchange="selectStore">
-      <view class="select-box">{{currentStoreName || '选择门店'}}</view>
-    </picker>
-    <view wx:else class="select-box">{{currentStoreName || '当前门店'}}</view>
-  </view>
-
   <view wx:if="{{canManage && activeStaffMenu === 'onboard'}}" class="section-label">入职</view>
   <view wx:if="{{canManage && activeStaffMenu === 'onboard'}}" class="panel add-panel">
     <view>
@@ -54,19 +46,60 @@
   </view>
 
   <view wx:if="{{canManage && activeStaffMenu === 'list'}}" class="section-label">员工</view>
-  <view wx:if="{{canManage && activeStaffMenu === 'list'}}" class="staff-list list-panel">
+  <view wx:if="{{canManage && activeStaffMenu === 'list'}}" class="staff-search">
+    <text class="search-icon">⌕</text>
+    <input class="staff-search-input" value="{{staffSearchKeyword}}" placeholder="搜索姓名、手机号、身份证号" bindinput="onStaffSearchInput" />
+    <button wx:if="{{staffSearchKeyword}}" class="search-clear" bindtap="clearStaffSearch">×</button>
+  </view>
+  <view wx:if="{{canManage && activeStaffMenu === 'list'}}" class="staff-list">
     <view wx:for="{{staff}}" wx:key="id" class="staff-card">
-      <view>
-        <view class="staff-name">{{item.name}}</view>
-        <view class="muted">{{item.role}} · {{item.gender || '性别未填'}} · {{item.age || '年龄未填'}}岁 · 身份：{{item.systemRoleText}} · {{item.phone || '未填手机号'}} · {{item.storeNames}} · 每周最多 {{item.maxPerWeek}} 班</view>
-        <view class="muted">身份证号：{{item.idCard || '未填'}}</view>
-        <view class="muted">入职时间：{{item.hireDate || '未填'}}</view>
-        <view class="invite-line">入职码：{{item.inviteCode}} · {{item.statusText}}</view>
+      <view class="staff-card-header">
+        <view class="staff-avatar">
+          <image wx:if="{{item.avatarUrl}}" class="staff-avatar-img" src="{{item.avatarUrl}}" mode="aspectFill" />
+          <text wx:else>{{item.nameInitial}}</text>
+        </view>
+        <view class="staff-title">
+          <view class="staff-name">{{item.name}}</view>
+          <view class="staff-subtitle">{{item.role}} · {{item.gender || '性别未填'}} · {{item.age || '年龄未填'}}岁</view>
+        </view>
+        <view class="status-badge {{item.status === 'left' ? 'danger' : (item.openidBound ? 'success' : 'warning')}}">{{item.statusText}}</view>
       </view>
+
+      <view class="staff-info-grid">
+        <view class="staff-info-item">
+          <text class="info-label">身份</text>
+          <text class="info-value">{{item.systemRoleText}}</text>
+        </view>
+        <view class="staff-info-item">
+          <text class="info-label">手机</text>
+          <text class="info-value">{{item.phone || '未填'}}</text>
+        </view>
+        <view class="staff-info-item">
+          <text class="info-label">门店</text>
+          <text class="info-value">{{item.storeNames}}</text>
+        </view>
+        <view class="staff-info-item">
+          <text class="info-label">上限</text>
+          <text class="info-value">每周 {{item.maxPerWeek}} 班</text>
+        </view>
+        <view class="staff-info-item full">
+          <text class="info-label">身份证</text>
+          <text class="info-value">{{item.idCard || '未填'}}</text>
+        </view>
+        <view class="staff-info-item">
+          <text class="info-label">入职</text>
+          <text class="info-value">{{item.hireDate || '未填'}}</text>
+        </view>
+        <view class="staff-info-item">
+          <text class="info-label">入职码</text>
+          <text class="info-value invite-value">{{item.inviteCode}}</text>
+        </view>
+      </view>
+
       <view class="staff-actions">
-        <button class="edit-btn" data-id="{{item.id}}" bindtap="startEdit">编辑</button>
-        <button wx:if="{{item.status !== 'left'}}" class="leave-btn" data-id="{{item.id}}" bindtap="markLeft">离职</button>
-        <button wx:else class="delete-text-btn" data-id="{{item.id}}" bindtap="deleteStaff">删除</button>
+        <button class="staff-action-btn edit-btn" data-id="{{item.id}}" bindtap="startEdit">编辑</button>
+        <button wx:if="{{item.status !== 'left'}}" class="staff-action-btn leave-btn" data-id="{{item.id}}" bindtap="markLeft">离职</button>
+        <button wx:else class="staff-action-btn delete-text-btn" data-id="{{item.id}}" bindtap="deleteStaff">删除</button>
       </view>
     </view>
     <view wx:if="{{!staff.length}}" class="empty-staff">本店暂无员工</view>

@@ -14,6 +14,7 @@ const {
 const { formatDate } = require('../../utils/date');
 const { matchNearestStore } = require('../../utils/location');
 const { isAdminSideRole, isSuperAdminRole, getVisibleStoresForRole, getScopedCurrentStoreId, syncTabBar } = require('../../utils/role');
+const { sortShiftsByStartTime } = require('../../utils/shifts');
 
 function pad(num) {
   return num < 10 ? `0${num}` : `${num}`;
@@ -57,7 +58,7 @@ Page({
   refresh() {
     const today = formatDate(new Date());
     const staff = getStore(STAFF_KEY, []);
-    const shifts = getStore(SHIFT_KEY, []);
+    const shifts = sortShiftsByStartTime(getStore(SHIFT_KEY, []));
     const role = getStore(ROLE_KEY, 'manager');
     const canManage = isAdminSideRole(role);
     const isSuperAdmin = isSuperAdminRole(role);

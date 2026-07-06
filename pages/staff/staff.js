@@ -88,6 +88,38 @@ function staffStoreIds(staff, fallbackStoreId) {
   return fallbackStoreId ? [fallbackStoreId] : [];
 }
 
+function normalizeSearchText(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function matchesStaffSearch(staff, keyword) {
+  const value = normalizeSearchText(keyword);
+  if (!value) return true;
+  return [
+    staff.name,
+    staff.phone,
+    staff.idCard
+  ].some((field) => normalizeSearchText(field).indexOf(value) >= 0);
+}
+
+function firstChar(value, fallback) {
+  const text = String(value || '').trim();
+  return text ? text.slice(0, 1) : fallback;
+}
+
+function roleRank(position, role) {
+  if (role === 'manager' || position === 'manager') return 1;
+  if (position === 'cashier') return 2;
+  if (position === 'network') return 3;
+  if (role === 'employee' || position === 'staff') return 4;
+  return 9;
+}
+
+function hireDateValue(value) {
+  const time = new Date(value || '9999-12-31').getTime();
+  return Number.isNaN(time) ? Number.MAX_SAFE_INTEGER : time;
+}
+
 Page({
   data: {
     role: 'manager',
@@ -97,6 +129,7 @@ Page({
     stores: [],
     currentStoreId: '',
     currentStoreName: '',
+    staffSearchKeyword: '',
     activeDropdown: '',
     activeStaffMenu: 'onboard',
     editingStaffId: '',
@@ -113,6 +146,11 @@ Page({
   },
 
   onShow() {
+    const defaultMenu = wx.getStorageSync('netbar_staff_default_menu');
+    if (defaultMenu === 'onboard' || defaultMenu === 'list') {
+      wx.removeStorageSync('netbar_staff_default_menu');
+      this.setData({ activeStaffMenu: defaultMenu });
+    }
     this.refresh();
   },
 
@@ -134,14 +172,32 @@ Page({
       return map;
     }, {});
     const relations = getStore(STAFF_ROLE_RELATION_KEY, []);
+    const relationMap = relations.reduce((map, item) => {
+      if (item.staffId) map[item.staffId] = item;
+      return map;
+    }, {});
+    const staffSearchKeyword = this.data.staffSearchKeyword;
     const staff = getStore(STAFF_KEY, [])
       .filter((item) => staffStoreIds(item, currentStoreId).indexOf(currentStoreId) >= 0)
       .map((item) => ({
         ...item,
+        systemRole: (relationMap[item.id] || {}).role || '',
+        roleSort: roleRank(item.position, (relationMap[item.id] || {}).role),
+        nameInitial: firstChar(item.name, '员'),
         statusText: item.status === 'left' ? '已离职' : (item.openidBound ? '已绑定' : '待注册'),
         storeNames: staffStoreIds(item, currentStoreId).map((id) => storeMap[id] || '未知门店').join('、'),
-      systemRoleText: roleText((relations.find((relation) => relation.staffId === item.id) || {}).role)
-    }));
+        systemRoleText: roleText((relationMap[item.id] || {}).role)
+      }))
+      .filter((item) => item.systemRole !== 'super_admin')
+      .filter((item) => matchesStaffSearch(item, staffSearchKeyword))
+      .sort((a, b) => (
+        a.roleSort - b.roleSort ||
+        hireDateValue(a.hireDate) - hireDateValue(b.hireDate) ||
+        String(a.name || '').localeCompare(String(b.name || ''), 'zh-Hans-CN')
+      ));
+    wx.setNavigationBarTitle({
+      title: currentStore.name || '员工管理'
+    });
     this.setData({
       role,
       canManage,
@@ -156,6 +212,18 @@ Page({
       }
       syncTabBar(this);
     });
+  },
+
+  onStaffSearchInput(event) {
+    this.setData({
+      staffSearchKeyword: event.detail.value || ''
+    }, () => this.refresh());
+  },
+
+  clearStaffSearch() {
+    this.setData({
+      staffSearchKeyword: ''
+    }, () => this.refresh());
   },
 
   switchStaffMenu(event) {
@@ -273,6 +341,7 @@ Page({
       inviteCode: this.data.editingStaffId
         ? (existingStaff.inviteCode || this.createInviteCode())
         : this.createInviteCode(),
+      avatarUrl: existingStaff.avatarUrl || '',
       openidBound: this.data.editingStaffId
         ? !!existingStaff.openidBound
         : false

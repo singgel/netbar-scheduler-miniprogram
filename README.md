@@ -42,9 +42,55 @@
 
 ## 后端与数据库
 
-项目已内置一个轻量 Node.js + SQLite 后端，用于持久化员工信息、员工角色、门店、班次、班表和打卡记录。
+项目已新增 `backend-springboot/` Spring Boot + MySQL 后端，用于替代微信云开发并持久化员工信息、员工角色、门店、班次、班表和打卡记录。原轻量 Node.js + SQLite 后端仍保留为本地开发参考。
 
-当前小程序也已接入微信云开发环境 `cloud1-d9g6y0rdyaa7aecd9`。`utils/config.js` 中 `USE_CLOUD_DATABASE = true` 时，小程序优先使用微信云数据库；本地 Node 后端保留为开发兜底。
+当前小程序的 `utils/config.js` 已切换为自有服务器模式：
+
+```js
+const API_BASE = 'http://114.67.227.98:8080';
+const USE_CLOUD_DATABASE = false;
+```
+
+正式发布前需要把 `API_BASE` 换成 HTTPS 域名，并在微信公众平台配置 request 合法域名。
+
+### Spring Boot + MySQL 后端
+
+后端目录：
+
+```text
+backend-springboot/
+```
+
+默认连接数据库：
+
+```text
+database: netbar_scheduler_miniprogram
+username: admin
+password file on server: /root/mysql-netbar_scheduler_miniprogram-admin-password.txt
+```
+
+本地打包：
+
+```bash
+cd backend-springboot
+mvn -s settings-public.xml clean package
+```
+
+云服务器上已部署为 systemd 服务：
+
+```bash
+systemctl status netbar-scheduler-backend
+systemctl restart netbar-scheduler-backend
+journalctl -u netbar-scheduler-backend -f
+```
+
+健康检查：
+
+```bash
+curl http://114.67.227.98:8080/api/health
+```
+
+接口契约与原 Node 后端保持一致，小程序无需大改页面逻辑。
 
 ### 微信云开发数据库
 

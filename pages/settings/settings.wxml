@@ -26,14 +26,14 @@
 
     <view class="store-list list-panel">
       <view wx:for="{{stores}}" wx:key="id" class="store-card">
-        <view>
+        <view class="store-info">
           <view class="store-name">{{item.name}}</view>
           <view class="muted">{{item.address || '未填写地址'}}</view>
           <view class="muted">{{item.latitude}}, {{item.longitude}} · {{item.checkinRadius}} 米</view>
         </view>
-        <view class="store-card-actions">
-          <button wx:if="{{isSuperAdmin}}" class="small-btn {{currentStoreId === item.id ? 'active-store' : ''}}" data-id="{{item.id}}" bindtap="useStore">{{currentStoreId === item.id ? '✓' : '设为当前'}}</button>
-          <button wx:if="{{isSuperAdmin}}" class="small-btn delete-store" data-id="{{item.id}}" bindtap="deleteStore">×</button>
+        <view wx:if="{{isSuperAdmin}}" class="store-card-actions">
+          <button class="small-btn {{currentStoreId === item.id ? 'active-store' : ''}}" data-id="{{item.id}}" bindtap="useStore">{{currentStoreId === item.id ? '当前门店' : '设为当前'}}</button>
+          <button class="small-btn delete-store" data-id="{{item.id}}" bindtap="deleteStore">×</button>
         </view>
       </view>
     </view>
@@ -41,26 +41,44 @@
 
   <view wx:if="{{canManage}}" class="section-label">规则</view>
   <view wx:if="{{canManage}}" class="panel config-panel">
-    <view class="section-title">班次人数</view>
-    <view class="muted tip">设置每个班次需要几个人，自动班表会按这里生成。</view>
-    <view wx:for="{{shifts}}" wx:key="id" class="shift-config">
-      <view>
-        <view class="shift-name">{{item.name}}</view>
-        <view class="muted">{{item.time}}</view>
+    <view class="section-title">班次设置</view>
+    <view class="muted tip">{{isSuperAdmin ? '按开始时间排序；可新增班次，也可以调整起止时间和人数。' : '当前角色仅可查看班次配置。'}}</view>
+
+    <view wx:if="{{isSuperAdmin}}" class="shift-form">
+      <input class="input" placeholder="班次名称，如 早班" value="{{shiftForm.name}}" data-field="name" bindinput="onShiftFormInput" />
+      <view class="shift-time-form">
+        <picker mode="time" value="{{shiftForm.startTime}}" data-field="startTime" bindchange="selectShiftFormTime">
+          <view class="time-box">开始 {{shiftForm.startTime}}</view>
+        </picker>
+        <picker mode="time" value="{{shiftForm.endTime}}" data-field="endTime" bindchange="selectShiftFormTime">
+          <view class="time-box">结束 {{shiftForm.endTime}}</view>
+        </picker>
       </view>
-      <view class="stepper">
+      <button class="btn btn-primary shift-add-btn" bindtap="addShift"><text class="btn-icon">+</text>新增班次</button>
+    </view>
+
+    <view wx:for="{{shifts}}" wx:key="id" class="shift-config">
+      <view class="shift-main">
+        <view class="shift-name">{{item.name}}</view>
+        <view wx:if="{{isSuperAdmin}}" class="shift-time-edit">
+          <picker mode="time" value="{{item.startTime}}" data-id="{{item.id}}" data-field="startTime" bindchange="changeShiftTime">
+            <view class="time-pill">{{item.startTime}}</view>
+          </picker>
+          <view class="time-separator">-</view>
+          <picker mode="time" value="{{item.endTime}}" data-id="{{item.id}}" data-field="endTime" bindchange="changeShiftTime">
+            <view class="time-pill">{{item.endTime}}</view>
+          </picker>
+        </view>
+        <view wx:else class="muted">{{item.time}}</view>
+      </view>
+      <view wx:if="{{isSuperAdmin}}" class="stepper">
         <button class="step-btn" data-id="{{item.id}}" data-delta="-1" bindtap="changeNeed">−</button>
         <view class="need">{{item.need}}</view>
         <button class="step-btn" data-id="{{item.id}}" data-delta="1" bindtap="changeNeed">+</button>
       </view>
+      <view wx:else class="readonly-need">{{item.need}} 人</view>
+      <button wx:if="{{isSuperAdmin}}" class="delete-shift-btn" data-id="{{item.id}}" bindtap="deleteShift">×</button>
     </view>
-  </view>
-
-  <view wx:if="{{canManage}}" class="section-label">测试</view>
-  <view wx:if="{{canManage}}" class="panel danger-panel">
-    <view class="section-title">测试工具</view>
-    <view class="muted tip">用于体验版清理本机身份，重新走手机号和入职码绑定流程。</view>
-    <button class="btn btn-ghost" bindtap="clearEmployeeBind"><text class="btn-icon">×</text>清除本机员工绑定</button>
   </view>
 
   <view wx:if="{{isSuperAdmin}}" class="section-label">维护</view>

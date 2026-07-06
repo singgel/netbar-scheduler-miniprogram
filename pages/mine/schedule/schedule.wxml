@@ -1,0 +1,24 @@
+<view class="page detail-page">
+  <view class="detail-card">
+    <view class="card-head">
+      <picker mode="selector" range="{{rangeOptions}}" range-key="label" value="{{rangeIndex}}" bindchange="selectRange">
+        <view class="range-select">
+          <text>{{rangeLabel}}</text>
+          <view class="range-arrow"></view>
+        </view>
+      </picker>
+      <view class="schedule-count">{{visibleSchedule.length}} 个班次</view>
+    </view>
+    <view wx:for="{{visibleSchedule}}" wx:key="key" class="schedule-row">
+      <view class="date-chip">
+        <view class="date-day">{{item.day}}</view>
+        <view class="date-week">{{item.week}}</view>
+      </view>
+      <view class="schedule-main">
+        <view class="schedule-title">{{item.shiftName}}</view>
+        <view class="schedule-meta">{{item.storeName}} · {{item.time}}</view>
+      </view>
+    </view>
+    <view wx:if="{{!visibleSchedule.length}}" class="empty-line">{{rangeLabel}}暂无排班</view>
+  </view>
+</view>

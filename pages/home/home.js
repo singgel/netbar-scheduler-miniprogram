@@ -33,6 +33,7 @@ Page({
     currentStoreId: '',
     currentStoreIndex: 0,
     currentStoreName: '',
+    currentStoreInitial: '',
     currentStaffId: '',
     currentStaffIndex: 0,
     currentStaffName: '',
@@ -100,6 +101,7 @@ Page({
       currentStoreId: currentStore.id || '',
       currentStoreIndex: storeIndex,
       currentStoreName: currentStore.name || '',
+      currentStoreInitial: currentStore.name ? currentStore.name.slice(0, 1) : '班',
       currentStaffId: currentStaff.id || '',
       currentStaffIndex: index,
       currentStaffName: currentStaff.name || '',
@@ -256,6 +258,7 @@ Page({
       maxPerWeek: cloudStaff.maxPerWeek || 6,
       status: cloudStaff.status || 'active',
       inviteCode: cloudStaff.inviteCode || '',
+      avatarUrl: cloudStaff.avatarUrl || '',
       openidBound: true
     };
     const staff = getStore(STAFF_KEY, []);
@@ -280,7 +283,7 @@ Page({
     const nextAuth = {
       ...getStore(EMPLOYEE_AUTH_KEY, {}),
       nickname: (options && options.nickname) || staff.name,
-      avatarUrl: (options && options.avatarUrl) || '',
+      avatarUrl: (options && options.avatarUrl) || staff.avatarUrl || '',
       phone,
       manualPhone: phone,
       staffId: staff.id,
@@ -299,7 +302,7 @@ Page({
       setStore(CURRENT_STORE_KEY, storeId);
     }
     setStore(STAFF_KEY, getStore(STAFF_KEY, []).map((item) => (
-      item.id === staff.id ? { ...item, phone, openidBound: true } : item
+      item.id === staff.id ? { ...item, phone, avatarUrl: item.avatarUrl || staff.avatarUrl || '', openidBound: true } : item
     )));
     wx.showToast({ title: isAdminSideRole(account.role) ? '已进入管理端' : '已进入员工端', icon: 'success' });
     this.refresh();
@@ -313,30 +316,43 @@ Page({
     this.resolveAndLoginByPhone('15922251233', { nickname: '李安安' });
   },
 
-  logout() {
-    setStore(EMPLOYEE_AUTH_KEY, {
-      nickname: '',
-      avatarUrl: '',
-      phone: '',
-      phoneCode: '',
-      manualPhone: '',
-      loginCode: getStore(EMPLOYEE_AUTH_KEY, {}).loginCode || '',
-      inviteCode: '',
-      staffId: '',
-      bound: false
+  clearEmployeeBind() {
+    wx.showModal({
+      title: '清除员工绑定',
+      content: '会清除本机员工身份和入职码，便于重新测试扫码入职流程。',
+      confirmColor: '#b42318',
+      success: (res) => {
+        if (!res.confirm) return;
+        setStore(EMPLOYEE_AUTH_KEY, {
+          nickname: '',
+          avatarUrl: '',
+          phone: '',
+          phoneCode: '',
+          manualPhone: '',
+          loginCode: '',
+          inviteCode: '',
+          staffId: '',
+          bound: false
+        });
+        setStore(INVITE_CODE_KEY, '');
+        setStore(ROLE_KEY, 'employee');
+        wx.showToast({ title: '已清除', icon: 'success' });
+        this.setData({
+          autoLoginChecked: true,
+          autoLoggingIn: false
+        }, () => this.refresh());
+      }
     });
-    setStore(INVITE_CODE_KEY, '');
-    setStore(ROLE_KEY, 'employee');
-    wx.showToast({ title: '已退出', icon: 'success' });
-    this.setData({
-      autoLoginChecked: true,
-      autoLoggingIn: false,
-      loginForm: {
-        phone: '',
-        credential: ''
-      },
-      codeSent: false
-    }, () => this.refresh());
+  },
+
+  openStaffOnboard() {
+    wx.setStorageSync('netbar_staff_default_menu', 'onboard');
+    wx.switchTab({ url: '/pages/staff/staff' });
+  },
+
+  openStaffList() {
+    wx.setStorageSync('netbar_staff_default_menu', 'list');
+    wx.switchTab({ url: '/pages/staff/staff' });
   },
 
   refreshLoginCode() {
@@ -404,6 +420,7 @@ Page({
   },
 
   selectStore(event) {
+    if (!this.data.isSuperAdmin) return;
     const index = Number(event.detail.value);
     const store = this.data.stores[index];
     if (!store) return;

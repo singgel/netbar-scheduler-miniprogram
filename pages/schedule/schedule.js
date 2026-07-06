@@ -1,5 +1,6 @@
 const {
   STAFF_KEY,
+  STAFF_ROLE_RELATION_KEY,
   SHIFT_KEY,
   SCHEDULE_KEY,
   ROLE_KEY,
@@ -12,7 +13,8 @@ const {
 } = require('../../utils/store');
 const { getMonthDays, monthLabel } = require('../../utils/date');
 const { generateMonthSchedule, staffNameMap } = require('../../utils/scheduler');
-const { isAdminSideRole, getVisibleStoresForRole, getScopedCurrentStoreId, syncTabBar } = require('../../utils/role');
+const { isAdminSideRole, getVisibleStoresForRole, getScopedCurrentStoreId, normalizeRole, syncTabBar } = require('../../utils/role');
+const { sortShiftsByStartTime } = require('../../utils/shifts');
 
 function staffStoreIds(staff, fallbackStoreId) {
   if (staff.storeIds && staff.storeIds.length) return staff.storeIds;
@@ -20,11 +22,17 @@ function staffStoreIds(staff, fallbackStoreId) {
   return fallbackStoreId ? [fallbackStoreId] : [];
 }
 
+function isSchedulableStaff(staff, relationMap) {
+  const relation = relationMap[staff.id] || {};
+  return normalizeRole(relation.role || staff.role) !== 'super_admin';
+}
+
 Page({
   data: {
     year: 2026,
     month: 6,
     monthText: '',
+    monthShortText: '',
     staff: [],
     storeStaff: [],
     shifts: [],
@@ -58,8 +66,9 @@ Page({
   refresh() {
     const staff = getStore(STAFF_KEY, []);
     const stores = getStore(STORE_KEY, []);
-    const shifts = getStore(SHIFT_KEY, []);
+    const shifts = sortShiftsByStartTime(getStore(SHIFT_KEY, []));
     const schedule = getStore(SCHEDULE_KEY, {});
+    const relations = getStore(STAFF_ROLE_RELATION_KEY, []);
     const role = getStore(ROLE_KEY, 'manager');
     const canManage = isAdminSideRole(role);
     const employeeAuth = getStore(EMPLOYEE_AUTH_KEY, {});
@@ -77,13 +86,23 @@ Page({
     const names = staffNameMap(staff);
     const storeSchedule = schedule[currentStoreId] || {};
     const activeStaff = staff.filter((item) => item.status !== 'left');
-    const storeStaff = activeStaff.filter((item) => staffStoreIds(item, currentStoreId).indexOf(currentStoreId) >= 0);
+    const relationMap = relations.reduce((map, item) => {
+      if (item.staffId) map[item.staffId] = item;
+      return map;
+    }, {});
+    const storeStaff = activeStaff
+      .filter((item) => staffStoreIds(item, currentStoreId).indexOf(currentStoreId) >= 0)
+      .filter((item) => isSchedulableStaff(item, relationMap));
+    const schedulableStaffIdMap = storeStaff.reduce((map, item) => {
+      map[item.id] = true;
+      return map;
+    }, {});
     const rows = days.map((day) => {
       let visibleShifts = [];
       if (canManage) {
         const daySchedule = storeSchedule[day.date] || {};
         visibleShifts = shifts.map((shift) => {
-          const ids = daySchedule[shift.id] || [];
+          const ids = (daySchedule[shift.id] || []).filter((id) => schedulableStaffIdMap[id]);
           return {
             ...shift,
             names: ids.map((id) => names[id] || '未知员工'),
@@ -105,14 +124,19 @@ Page({
           });
         });
       }
+      const hasAssigned = visibleShifts.some((shift) => shift.names && shift.names.length);
       return {
         ...day,
         shifts: visibleShifts,
         hasMine: visibleShifts.some((shift) => shift.isMine),
-        hasStoreSchedule: visibleShifts.length > 0
+        hasAssigned,
+        hasStoreSchedule: canManage ? hasAssigned : visibleShifts.length > 0
       };
     }).filter((day) => canManage || day.hasStoreSchedule);
 
+    wx.setNavigationBarTitle({
+      title: currentStore.name || '班表'
+    });
     this.setData({
       staff,
       storeStaff,
@@ -127,7 +151,8 @@ Page({
       employeeReady,
       schedule,
       rows,
-      monthText: monthLabel(this.data.year, this.data.month)
+      monthText: monthLabel(this.data.year, this.data.month),
+      monthShortText: `${this.data.month}月`
     }, () => syncTabBar(this));
   },
 
@@ -190,7 +215,11 @@ Page({
     if (!this.data.canManage) return;
     const { date, shift } = event.currentTarget.dataset;
     const storeSchedule = this.data.schedule[this.data.currentStoreId] || {};
-    const activeStaffIds = ((storeSchedule[date] || {})[shift] || []).slice();
+    const validStaffIds = this.data.storeStaff.reduce((map, item) => {
+      map[item.id] = true;
+      return map;
+    }, {});
+    const activeStaffIds = ((storeSchedule[date] || {})[shift] || []).filter((id) => validStaffIds[id]);
     const activeStaffIdsMap = activeStaffIds.reduce((map, id) => {
       map[id] = true;
       return map;

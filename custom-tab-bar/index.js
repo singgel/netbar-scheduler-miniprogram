@@ -5,13 +5,13 @@ const adminItems = [
   { pagePath: 'pages/home/home', text: '工作台', icon: '台' },
   { pagePath: 'pages/schedule/schedule', text: '班表', icon: '日' },
   { pagePath: 'pages/staff/staff', text: '员工', icon: '人' },
-  { pagePath: 'pages/settings/settings', text: '设置', icon: '设' }
+  { pagePath: 'pages/mine/mine', text: '我的', icon: '我' }
 ];
 
 const employeeItems = [
   { pagePath: 'pages/home/home', text: '工作台', icon: '台' },
   { pagePath: 'pages/schedule/schedule', text: '班表', icon: '日' },
-  { pagePath: 'pages/attendance/attendance', text: '打卡', icon: '卡' }
+  { pagePath: 'pages/mine/mine', text: '我的', icon: '我' }
 ];
 
 Component({

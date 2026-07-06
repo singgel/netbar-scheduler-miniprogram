@@ -5,7 +5,6 @@ const {
   SCHEDULE_KEY,
   ROLE_KEY,
   CURRENT_STAFF_KEY,
-  EMPLOYEE_AUTH_KEY,
   INVITE_CODE_KEY,
   DEBUG_ROLE_SWITCH_KEY,
   STORE_KEY,
@@ -18,6 +17,15 @@ const {
   setStore
 } = require('../../utils/store');
 const { isAdminSideRole, isSuperAdminRole, getVisibleStoresForRole, getScopedCurrentStoreId, syncTabBar } = require('../../utils/role');
+const { buildShiftTime, currentTime, sortShiftsByStartTime } = require('../../utils/shifts');
+
+function emptyShiftForm() {
+  return {
+    name: '',
+    startTime: currentTime(),
+    endTime: currentTime()
+  };
+}
 
 Page({
   data: {
@@ -34,7 +42,8 @@ Page({
       latitude: '',
       longitude: '',
       checkinRadius: ''
-    }
+    },
+    shiftForm: emptyShiftForm()
   },
 
   onShow() {
@@ -57,7 +66,7 @@ Page({
       canManage,
       isSuperAdmin,
       debugRoleSwitch: getStore(DEBUG_ROLE_SWITCH_KEY, false),
-      shifts: getStore(SHIFT_KEY, []),
+      shifts: sortShiftsByStartTime(getStore(SHIFT_KEY, [])),
       stores: getVisibleStoresForRole(role, allStores, currentStaffId),
       currentStoreId
     }, () => syncTabBar(this));
@@ -67,32 +76,6 @@ Page({
     const next = !this.data.debugRoleSwitch;
     setStore(DEBUG_ROLE_SWITCH_KEY, next);
     this.setData({ debugRoleSwitch: next });
-  },
-
-  clearEmployeeBind() {
-    wx.showModal({
-      title: '清除员工绑定',
-      content: '会清除本机员工身份和入职码，便于重新测试扫码入职流程。',
-      confirmColor: '#b42318',
-      success: (res) => {
-        if (!res.confirm) return;
-        setStore(EMPLOYEE_AUTH_KEY, {
-          nickname: '',
-          avatarUrl: '',
-          phone: '',
-          phoneCode: '',
-          manualPhone: '',
-          loginCode: '',
-          inviteCode: '',
-          staffId: '',
-          bound: false
-        });
-        setStore(INVITE_CODE_KEY, '');
-        setStore(ROLE_KEY, 'employee');
-        wx.showToast({ title: '已清除', icon: 'success' });
-        this.refresh();
-      }
-    });
   },
 
   onStoreInput(event) {
@@ -179,17 +162,100 @@ Page({
   },
 
   changeNeed(event) {
-    if (!this.data.canManage) return;
+    if (!this.data.isSuperAdmin) return;
     const { id, delta } = event.currentTarget.dataset;
-    const shifts = this.data.shifts.map((item) => {
+    const shifts = sortShiftsByStartTime(this.data.shifts.map((item) => {
       if (item.id !== id) return item;
       return {
         ...item,
         need: Math.max(1, item.need + Number(delta))
       };
-    });
+    }));
     setStore(SHIFT_KEY, shifts);
     this.setData({ shifts });
+  },
+
+  changeShiftTime(event) {
+    if (!this.data.isSuperAdmin) return;
+    const { id, field } = event.currentTarget.dataset;
+    const value = event.detail.value || '00:00';
+    const shifts = sortShiftsByStartTime(this.data.shifts.map((item) => {
+      if (item.id !== id) return item;
+      const startTime = field === 'startTime' ? value : item.startTime;
+      const endTime = field === 'endTime' ? value : item.endTime;
+      return {
+        ...item,
+        startTime,
+        endTime,
+        time: buildShiftTime(startTime, endTime)
+      };
+    }));
+    setStore(SHIFT_KEY, shifts);
+    this.setData({ shifts });
+  },
+
+  onShiftFormInput(event) {
+    const field = event.currentTarget.dataset.field;
+    this.setData({
+      [`shiftForm.${field}`]: event.detail.value
+    });
+  },
+
+  selectShiftFormTime(event) {
+    const field = event.currentTarget.dataset.field;
+    this.setData({
+      [`shiftForm.${field}`]: event.detail.value || currentTime()
+    });
+  },
+
+  addShift() {
+    if (!this.data.isSuperAdmin) return;
+    const { name, startTime, endTime } = this.data.shiftForm;
+    if (!name.trim()) {
+      wx.showToast({ title: '请输入班次名称', icon: 'none' });
+      return;
+    }
+    const next = sortShiftsByStartTime(getStore(SHIFT_KEY, []).concat({
+      id: `shift_${Date.now()}`,
+      name: name.trim(),
+      time: buildShiftTime(startTime, endTime),
+      need: 1,
+      color: '#eef6ff'
+    }));
+    setStore(SHIFT_KEY, next);
+    this.setData({
+      shifts: next,
+      shiftForm: emptyShiftForm()
+    });
+    wx.showToast({ title: '已新增班次', icon: 'success' });
+  },
+
+  deleteShift(event) {
+    if (!this.data.isSuperAdmin) return;
+    const id = event.currentTarget.dataset.id;
+    const shift = this.data.shifts.find((item) => item.id === id) || {};
+    wx.showModal({
+      title: '删除班次',
+      content: `确定删除${shift.name || '该班次'}？已有排班里的这个班次也会同步移除。`,
+      confirmColor: '#b42318',
+      success: (res) => {
+        if (!res.confirm) return;
+        const shifts = sortShiftsByStartTime(getStore(SHIFT_KEY, []).filter((item) => item.id !== id));
+        const schedule = { ...getStore(SCHEDULE_KEY, {}) };
+        Object.keys(schedule).forEach((storeId) => {
+          const storeSchedule = { ...(schedule[storeId] || {}) };
+          Object.keys(storeSchedule).forEach((date) => {
+            const day = { ...(storeSchedule[date] || {}) };
+            delete day[id];
+            storeSchedule[date] = day;
+          });
+          schedule[storeId] = storeSchedule;
+        });
+        setStore(SHIFT_KEY, shifts);
+        setStore(SCHEDULE_KEY, schedule);
+        this.refresh();
+      }
+    });
   },
 
   resetDemo() {

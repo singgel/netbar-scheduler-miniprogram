@@ -1,14 +1,14 @@
 <view class="page schedule-page">
   <view class="topbar">
-    <view>
+    <view class="topbar-main">
       <view class="title">{{monthText}}</view>
-      <view class="muted">{{canManage ? '管理端：查看和调整门店班次安排' : '员工端：查看本门店与我的班次'}}</view>
-      <view wx:if="{{canManage}}" class="mine-tag">当前门店：{{currentStoreName || '未选择'}}</view>
+      <view class="topbar-desc">{{canManage ? '管理端：查看和调整门店班次安排' : '员工端：查看本门店与我的班次'}}</view>
       <view wx:if="{{role === 'employee'}}" class="mine-tag">当前员工：{{currentStaffName || '未选择'}} · 本门店排班</view>
     </view>
-    <view class="month-actions">
-      <button class="mini-btn icon-only" bindtap="prevMonth">‹</button>
-      <button class="mini-btn icon-only" bindtap="nextMonth">›</button>
+    <view class="month-switch">
+      <button class="month-arrow" bindtap="prevMonth">‹</button>
+      <view class="month-current">{{monthShortText}}</view>
+      <button class="month-arrow" bindtap="nextMonth">›</button>
     </view>
   </view>
 
@@ -28,35 +28,49 @@
     <view class="muted">本门店本月暂无排班，或请让店长生成本月安排。</view>
   </view>
 
-  <scroll-view wx:if="{{employeeReady}}" class="calendar-scroll" scroll-x enhanced>
-    <view class="calendar {{role === 'employee' ? 'employee-calendar' : ''}}">
-      <view class="grid header-row">
-        <view class="name-cell header-cell">日期</view>
-        <view wx:if="{{canManage}}" wx:for="{{shifts}}" wx:key="id" class="shift-head header-cell">{{item.name}}</view>
-        <view wx:if="{{role === 'employee'}}" class="shift-head header-cell">本店班次</view>
-      </view>
-
-      <view wx:for="{{rows}}" wx:key="date" class="grid day-row {{item.isWeekend ? 'weekend-row' : ''}}">
-        <view class="name-cell date-cell">
-          <view class="date-main">{{item.day}}日</view>
+  <view wx:if="{{employeeReady}}" class="schedule-list">
+    <view wx:for="{{rows}}" wx:key="date" class="day-card {{item.isWeekend ? 'weekend-card' : ''}}">
+      <view class="day-head">
+        <view class="date-badge">
+          <view class="date-main">{{item.day}}</view>
           <view class="date-week">{{item.week}}</view>
         </view>
-        <view wx:for="{{item.shifts}}" wx:for-item="shift" wx:key="id" class="shift-cell" style="background: {{shift.color}}">
-          <view class="shift-time">{{shift.time}}</view>
-          <view class="people">
-            <text wx:if="{{!shift.names.length}}" class="empty">未排</text>
-            <text wx:for="{{shift.names}}" wx:for-item="name" wx:key="*this" class="person">{{name}}</text>
+        <view class="day-title">
+          <view class="day-date">{{item.date}}</view>
+          <view class="day-summary">{{item.hasStoreSchedule ? '已排班' : '暂无安排'}}</view>
+        </view>
+      </view>
+
+      <view class="shift-list">
+        <view wx:for="{{item.shifts}}" wx:for-item="shift" wx:key="id" class="shift-card">
+          <view class="shift-color" style="background: {{shift.color}}"></view>
+          <view class="shift-main">
+            <view class="shift-title-row">
+              <view>
+                <view class="shift-name">{{shift.name}}</view>
+                <view class="shift-time">{{shift.time}}</view>
+              </view>
+              <button wx:if="{{canManage}}" class="cell-btn" data-date="{{item.date}}" data-shift="{{shift.id}}" bindtap="openPicker">调整</button>
+            </view>
+            <view class="people">
+              <text wx:if="{{!shift.names.length}}" class="empty">未排</text>
+              <text wx:for="{{shift.names}}" wx:for-item="name" wx:key="*this" class="person">{{name}}</text>
+            </view>
           </view>
-          <button wx:if="{{canManage}}" class="cell-btn" data-date="{{item.date}}" data-shift="{{shift.id}}" bindtap="openPicker">···</button>
         </view>
       </view>
     </view>
-  </scroll-view>
+  </view>
 
   <view wx:if="{{pickerVisible}}" class="sheet-mask" bindtap="closePicker">
     <view class="sheet" catchtap="noop">
-      <view class="sheet-title">选择伙伴</view>
-      <view class="muted sheet-subtitle">{{activeDate}} · {{activeShiftName}}</view>
+      <view class="sheet-head">
+        <view>
+          <view class="sheet-title">选择伙伴</view>
+          <view class="muted sheet-subtitle">{{activeDate}} · {{activeShiftName}}</view>
+        </view>
+        <button class="sheet-close" bindtap="closePicker">×</button>
+      </view>
       <view class="staff-options">
         <view wx:for="{{staffOptions}}" wx:key="id" class="staff-option" data-id="{{item.id}}" bindtap="toggleStaff">
           <view>
@@ -66,7 +80,9 @@
           <view class="check {{item.checked ? 'checked' : ''}}">{{item.checked ? '✓' : '+'}}</view>
         </view>
       </view>
-      <button class="btn btn-primary" bindtap="savePicker"><text class="btn-icon">✓</text>保存</button>
+      <view class="sheet-actions">
+        <button class="btn btn-primary" bindtap="savePicker"><text class="btn-icon">✓</text>保存</button>
+      </view>
     </view>
   </view>
 </view>

@@ -12,21 +12,71 @@
 }
 
 .shift-config {
-  min-height: 112rpx;
-  display: flex;
+  min-height: 116rpx;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  justify-content: space-between;
+  column-gap: 12rpx;
   border-top: 1rpx solid #edf0f5;
+  padding: 18rpx 0;
+  box-sizing: border-box;
 }
 
 .config-panel {
   margin-top: 20rpx;
 }
 
+.shift-form {
+  display: grid;
+  gap: 14rpx;
+  margin: 18rpx 0 14rpx;
+  padding: 18rpx;
+  border-radius: 14rpx;
+  background: #f7f8fa;
+  box-sizing: border-box;
+}
+
+.shift-time-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14rpx;
+}
+
+.time-box {
+  width: 100%;
+  height: 76rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 22rpx;
+  border: 1rpx solid #e5e6eb;
+  border-radius: 8rpx;
+  background: #ffffff;
+  color: #1f2329;
+  font-size: 26rpx;
+  box-sizing: border-box;
+}
+
+.shift-add-btn {
+  width: 100%;
+  min-width: 0;
+  height: 76rpx;
+  line-height: 76rpx;
+  padding-left: 12rpx;
+  padding-right: 12rpx;
+  margin: 0;
+  box-sizing: border-box;
+}
+
 .store-form {
   display: grid;
   gap: 14rpx;
   margin-top: 18rpx;
+}
+
+.store-form .input,
+.shift-form .input {
+  width: 100%;
+  min-width: 0;
 }
 
 .coord-grid,
@@ -36,20 +86,26 @@
   gap: 14rpx;
 }
 
+.store-actions .btn {
+  width: 100%;
+  min-width: 0;
+  padding-left: 12rpx;
+  padding-right: 12rpx;
+  box-sizing: border-box;
+}
+
 .store-list {
   margin-top: 22rpx;
   box-shadow: none;
 }
 
 .store-card {
-  min-height: 128rpx;
+  min-height: 0;
   border-bottom: 1rpx solid #edf0f5;
-  padding: 22rpx 24rpx;
+  padding: 24rpx;
   box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16rpx;
+  display: grid;
+  gap: 18rpx;
 }
 
 .store-card:last-child {
@@ -60,41 +116,63 @@
   color: #1f2329;
   font-size: 30rpx;
   font-weight: 700;
+  line-height: 40rpx;
   margin-bottom: 6rpx;
+  word-break: break-all;
+}
+
+.store-info {
+  min-width: 0;
+}
+
+.store-info .muted {
+  display: block;
+  font-size: 25rpx;
+  line-height: 36rpx;
+  word-break: break-all;
 }
 
 .store-card-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 56rpx;
   align-items: center;
-  gap: 10rpx;
-  flex-shrink: 0;
+  gap: 12rpx;
 }
 
 .small-btn {
-  min-width: 58rpx;
-  height: 52rpx;
-  border-radius: 999rpx;
+  width: 100%;
+  min-width: 0;
+  height: 56rpx;
+  border-radius: 12rpx;
   background: #f2f3f5;
   color: #1f2329;
   font-size: 24rpx;
   font-weight: 700;
-  line-height: 52rpx;
-  padding: 0 18rpx;
+  line-height: 56rpx;
+  padding: 0 20rpx;
+  margin: 0;
   box-shadow: none;
+}
+
+.small-btn::after {
+  border: 0;
 }
 
 .active-store {
   background: #07c160;
   color: #ffffff;
-  min-width: 52rpx;
-  padding: 0;
 }
 
 .delete-store {
-  width: 52rpx;
-  min-width: 52rpx;
+  width: 56rpx;
+  height: 56rpx;
+  min-width: 56rpx;
+  border-radius: 50%;
   background: #fff2f0;
   color: #e64340;
+  font-size: 28rpx;
+  font-weight: 800;
+  line-height: 56rpx;
   padding: 0;
 }
 
@@ -102,9 +180,46 @@
   color: #1f2329;
   font-size: 30rpx;
   font-weight: 700;
+  line-height: 40rpx;
+  white-space: nowrap;
+}
+
+.shift-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.shift-time-edit {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-top: 8rpx;
+  flex-wrap: wrap;
+}
+
+.time-pill {
+  height: 42rpx;
+  min-width: 84rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999rpx;
+  background: #f2f7ff;
+  color: #1677ff;
+  font-size: 22rpx;
+  font-weight: 700;
+  padding: 0 12rpx;
+  box-sizing: border-box;
+}
+
+.time-separator {
+  color: #8a8f99;
+  font-size: 22rpx;
+  line-height: 42rpx;
 }
 
 .stepper {
+  width: 188rpx;
   display: flex;
   align-items: center;
   border: 1rpx solid #e5e6eb;
@@ -114,22 +229,63 @@
 }
 
 .step-btn {
-  width: 72rpx;
-  height: 64rpx;
+  width: 56rpx;
+  height: 56rpx;
   border-radius: 0;
   background: transparent;
   color: #07c160;
   font-size: 32rpx;
   font-weight: 700;
-  line-height: 64rpx;
+  line-height: 56rpx;
   padding: 0;
+  margin: 0;
+}
+
+.step-btn::after {
+  border: 0;
 }
 
 .need {
-  width: 72rpx;
+  width: 76rpx;
   text-align: center;
   color: #1f2329;
   font-weight: 700;
+  line-height: 56rpx;
+}
+
+.readonly-need {
+  min-width: 88rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999rpx;
+  background: #f2f3f5;
+  color: #646a73;
+  font-size: 24rpx;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.delete-shift-btn {
+  width: 44rpx;
+  height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff2f0;
+  color: #e64340;
+  font-size: 28rpx;
+  font-weight: 800;
+  line-height: 44rpx;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
+}
+
+.delete-shift-btn::after {
+  border: 0;
 }
 
 .danger-panel {

@@ -89,63 +89,94 @@
   </block>
 
   <block wx:else>
-    <view class="workbench-head">
-      <view>
-        <view class="brand">班次小助手</view>
-        <view class="workbench-title">{{isAdminSide ? (isSuperAdmin ? '超级管理员工作台' : '店长工作台') : '员工端工作台'}}</view>
-        <view class="workbench-subtitle">{{currentStaffName || '已登录'}} · {{employeeAuth.phone || employeeAuth.manualPhone}}</view>
+    <view class="workbench-hero">
+      <view class="hero-main">
+        <view class="avatar-badge">{{currentStoreInitial || '班'}}</view>
+        <view class="hero-title-wrap">
+          <view class="workbench-title">工作台</view>
+          <view class="workbench-subtitle">{{isAdminSide ? (isSuperAdmin ? '超级管理员' : '店长') : '员工端'}} · {{currentStaffName || '已登录'}}</view>
+        </view>
       </view>
-      <button class="logout-btn" bindtap="logout">退出</button>
     </view>
 
-    <view wx:if="{{isAdminSide}}" class="panel store-panel">
-      <view class="field-label">当前门店</view>
-      <picker mode="selector" range="{{stores}}" range-key="name" value="{{currentStoreIndex}}" bindchange="selectStore">
-        <view class="select-box">{{currentStoreName || '选择门店'}}</view>
+    <view wx:if="{{isAdminSide}}" class="store-strip">
+      <view>
+        <view class="store-strip-label">当前门店</view>
+        <view class="store-strip-name">{{currentStoreName || '选择门店'}}</view>
+      </view>
+      <picker wx:if="{{isSuperAdmin}}" mode="selector" range="{{stores}}" range-key="name" value="{{currentStoreIndex}}" bindchange="selectStore">
+        <view class="store-switch">切换</view>
       </picker>
     </view>
 
-    <view class="quick-grid list-panel">
-      <navigator wx:if="{{isAdminSide || canUseEmployeeFeatures}}" class="quick-card" url="/pages/schedule/schedule" open-type="switchTab">
-        <view class="quick-main">
-          <view class="icon-tile blue">日</view>
-          <view>
-            <view class="quick-title">{{isAdminSide ? '查看门店班表' : '我的班次'}}</view>
-            <view class="muted">{{isAdminSide ? '按月查看和调整每天安排' : '只显示与我相关的安排'}}</view>
+    <view wx:if="{{isAdminSide}}" class="app-group">
+      <view class="group-title">门店运营</view>
+      <view class="mini-app-grid">
+        <navigator class="mini-app" url="/pages/schedule/schedule" open-type="switchTab">
+          <view class="mini-icon icon-schedule">
+            <view class="icon-calendar-shape"></view>
           </view>
-        </view>
-        <view class="chevron">›</view>
-      </navigator>
-      <navigator wx:if="{{role === 'employee' && canUseEmployeeFeatures}}" class="quick-card" url="/pages/attendance/attendance" open-type="switchTab">
-        <view class="quick-main">
-          <view class="icon-tile green">卡</view>
-          <view>
-            <view class="quick-title">去打卡</view>
-            <view class="muted">记录上班和下班时间</view>
+          <view class="mini-title">门店班表</view>
+        </navigator>
+        <view class="mini-app" bindtap="openStaffOnboard">
+          <view class="mini-icon icon-onboard">
+            <view class="icon-plus-person">+</view>
           </view>
+          <view class="mini-title">员工入职</view>
         </view>
-        <view class="chevron">›</view>
-      </navigator>
-      <navigator wx:if="{{isAdminSide}}" class="quick-card" url="/pages/staff/staff" open-type="switchTab">
-        <view class="quick-main">
-          <view class="icon-tile">人</view>
-          <view>
-            <view class="quick-title">员工维护</view>
-            <view class="muted">办理入职、离职与查看员工</view>
+        <view class="mini-app" bindtap="openStaffList">
+          <view class="mini-icon icon-staff">
+            <view class="icon-person-shape"></view>
           </view>
+          <view class="mini-title">员工查询</view>
         </view>
-        <view class="chevron">›</view>
-      </navigator>
-      <navigator wx:if="{{isAdminSide}}" class="quick-card" url="/pages/settings/settings" open-type="switchTab">
-        <view class="quick-main">
-          <view class="icon-tile">设</view>
-          <view>
-            <view class="quick-title">门店与规则</view>
-            <view class="muted">维护门店位置和班次人数</view>
+        <navigator class="mini-app" url="/pages/settings/settings">
+          <view class="mini-icon icon-store">
+            <view class="icon-shop-shape"></view>
           </view>
+          <view class="mini-title">门店规则</view>
+        </navigator>
+        <navigator class="mini-app" url="/pages/settings/settings">
+          <view class="mini-icon icon-shift">
+            <view class="icon-clock-shape"></view>
+          </view>
+          <view class="mini-title">班次人数</view>
+        </navigator>
+      </view>
+    </view>
+
+    <view wx:if="{{isAdminSide}}" class="app-group system-group">
+      <view class="group-title">系统工具</view>
+      <view class="mini-app-grid">
+        <navigator class="mini-app" url="/pages/settings/settings">
+          <view class="mini-icon icon-settings">
+            <view class="icon-settings-shape">
+              <view class="icon-settings-dot"></view>
+            </view>
+          </view>
+          <view class="mini-title">设置中心</view>
+        </navigator>
+        <view class="mini-app" bindtap="clearEmployeeBind">
+          <view class="mini-icon icon-test">
+            <view class="icon-tool-shape">✓</view>
+          </view>
+          <view class="mini-title">测试工具</view>
         </view>
-        <view class="chevron">›</view>
-      </navigator>
+      </view>
+    </view>
+
+    <view wx:if="{{role === 'employee' && canUseEmployeeFeatures}}" class="app-group">
+      <view class="group-title">员工自助</view>
+      <view class="mini-app-grid">
+        <navigator class="mini-app" url="/pages/schedule/schedule" open-type="switchTab">
+          <view class="mini-icon icon-schedule"><view class="icon-calendar-shape"></view></view>
+          <view class="mini-title">我的班次</view>
+        </navigator>
+        <navigator class="mini-app" url="/pages/attendance/attendance">
+          <view class="mini-icon icon-attendance"><view class="icon-check-shape">✓</view></view>
+          <view class="mini-title">员工打卡</view>
+        </navigator>
+      </view>
     </view>
   </block>
 </view>

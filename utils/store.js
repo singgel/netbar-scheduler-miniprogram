@@ -14,9 +14,9 @@ const INVITE_CODE_KEY = 'netbar_invite_code';
 const DEBUG_ROLE_SWITCH_KEY = 'netbar_debug_role_switch';
 
 const defaultStaff = [
-  { id: 'emp_super_001', name: '超级管理员', gender: '男', age: 35, idCard: '120101199101010019', role: '超级管理员', position: 'manager', phone: '15500000000', storeIds: ['store1', 'store2'], maxPerWeek: 6, status: 'active', hireDate: '2024-01-01', inviteCode: '100000', openidBound: false },
-  { id: 'emp_manager_001', name: '张明远', gender: '男', age: 32, idCard: '120101199403120018', role: '店长', position: 'manager', phone: '15522013798', storeIds: ['store1'], maxPerWeek: 6, status: 'active', hireDate: '2024-03-12', inviteCode: '100001', openidBound: false },
-  { id: 'emp_staff_001', name: '李安安', gender: '女', age: 24, idCard: '120101200206180027', role: '普通员工', position: 'staff', phone: '15922251233', storeIds: ['store1'], maxPerWeek: 6, status: 'active', hireDate: '2025-06-18', inviteCode: '100002', openidBound: false }
+  { id: 'emp_super_001', name: '超级管理员', gender: '男', age: 35, idCard: '120101199101010019', role: '超级管理员', position: 'manager', phone: '15500000000', storeIds: ['store1', 'store2'], maxPerWeek: 6, status: 'active', hireDate: '2024-01-01', inviteCode: '100000', avatarUrl: '', openidBound: false },
+  { id: 'emp_manager_001', name: '张明远', gender: '男', age: 32, idCard: '120101199403120018', role: '店长', position: 'manager', phone: '15522013798', storeIds: ['store1'], maxPerWeek: 6, status: 'active', hireDate: '2024-03-12', inviteCode: '100001', avatarUrl: '', openidBound: false },
+  { id: 'emp_staff_001', name: '李安安', gender: '女', age: 24, idCard: '120101200206180027', role: '普通员工', position: 'staff', phone: '15922251233', storeIds: ['store1'], maxPerWeek: 6, status: 'active', hireDate: '2025-06-18', inviteCode: '100002', avatarUrl: '', openidBound: false }
 ];
 
 const defaultStaffRoleRelations = [
@@ -75,6 +75,7 @@ function normalizeStaff(staff, fallbackStoreId) {
     storeIds: item.storeIds && item.storeIds.length ? item.storeIds : [fallbackStoreId],
     status: item.status || 'active',
     inviteCode: item.inviteCode || String(100001 + index),
+    avatarUrl: item.avatarUrl || '',
     openidBound: !!item.openidBound
   }));
 }
@@ -194,7 +195,7 @@ function syncStoreFromBackend() {
   return pullSnapshot().then((snapshot) => {
     if (!snapshot) return null;
     if (snapshot.stores && snapshot.stores.length) setLocalStore(STORE_KEY, snapshot.stores);
-    if (snapshot.staff && snapshot.staff.length) setLocalStore(STAFF_KEY, snapshot.staff);
+    if (snapshot.staff && snapshot.staff.length) setLocalStore(STAFF_KEY, normalizeStaff(snapshot.staff, defaultStores[0].id));
     if (snapshot.staffRoleRelations && snapshot.staffRoleRelations.length) setLocalStore(STAFF_ROLE_RELATION_KEY, snapshot.staffRoleRelations);
     if (snapshot.shifts && snapshot.shifts.length) setLocalStore(SHIFT_KEY, snapshot.shifts);
     if (snapshot.schedule) setLocalStore(SCHEDULE_KEY, snapshot.schedule);

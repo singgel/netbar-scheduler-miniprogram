@@ -1,0 +1,14 @@
+<view class="page detail-page">
+  <view class="detail-card">
+    <view class="card-title">所在门店</view>
+    <view wx:for="{{storeCards}}" wx:key="id" class="store-row">
+      <view class="store-dot">{{item.nameInitial}}</view>
+      <view class="store-main">
+        <view class="store-name">{{item.name}}</view>
+        <view class="store-address">{{item.address || '未填写地址'}}</view>
+        <view class="store-meta">{{item.latitude}}, {{item.longitude}} · {{item.checkinRadius || 200}} 米</view>
+      </view>
+    </view>
+    <view wx:if="{{!storeCards.length}}" class="empty-line">暂无门店信息</view>
+  </view>
+</view>

@@ -1,0 +1,51 @@
+.detail-page {
+  display: grid;
+  gap: 20rpx;
+}
+
+.detail-card {
+  padding: 26rpx;
+  border: 1rpx solid #edf0f5;
+  border-radius: 18rpx;
+  background: #ffffff;
+  box-shadow: 0 8rpx 24rpx rgba(31, 35, 41, 0.04);
+  box-sizing: border-box;
+}
+
+.card-title {
+  color: #1f2329;
+  font-size: 30rpx;
+  font-weight: 800;
+  line-height: 40rpx;
+  margin-bottom: 20rpx;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18rpx;
+}
+
+.info-item {
+  min-width: 0;
+  display: grid;
+  gap: 6rpx;
+}
+
+.info-item.full {
+  grid-column: 1 / -1;
+}
+
+.info-label {
+  color: #8a8f99;
+  font-size: 22rpx;
+  line-height: 30rpx;
+}
+
+.info-value {
+  color: #343842;
+  font-size: 26rpx;
+  font-weight: 700;
+  line-height: 36rpx;
+  word-break: break-all;
+}

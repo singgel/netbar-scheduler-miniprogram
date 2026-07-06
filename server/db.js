@@ -80,6 +80,7 @@ function migrate(db) {
       max_per_week INTEGER DEFAULT 6,
       status TEXT DEFAULT 'active',
       invite_code TEXT DEFAULT '',
+      avatar_url TEXT DEFAULT '',
       openid_bound INTEGER DEFAULT 0,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP
@@ -165,6 +166,7 @@ function migrate(db) {
   ensureColumn(db, 'staff', 'id_card', "TEXT DEFAULT ''");
   ensureColumn(db, 'staff', 'position', "TEXT DEFAULT ''");
   ensureColumn(db, 'staff', 'hire_date', "TEXT DEFAULT ''");
+  ensureColumn(db, 'staff', 'avatar_url', "TEXT DEFAULT ''");
   ensureColumn(db, 'staff_role_relations', 'position', "TEXT DEFAULT 'staff'");
   ensureColumn(db, 'staff_role_relations', 'position_text', "TEXT DEFAULT '普通员工'");
 }
@@ -205,6 +207,7 @@ function readStaff(db) {
       max_per_week AS maxPerWeek,
       status,
       invite_code AS inviteCode,
+      avatar_url AS avatarUrl,
       openid_bound AS openidBound
     FROM staff
     ORDER BY created_at, id
@@ -227,7 +230,7 @@ function readShifts(db) {
   return db.prepare(`
     SELECT id, name, time, need, color
     FROM shifts
-    ORDER BY created_at, id
+    ORDER BY time, created_at, id
   `).all();
 }
 
@@ -317,9 +320,9 @@ function replaceStaff(db, staff) {
   const insertStaff = db.prepare(`
     INSERT INTO staff (
       id, name, gender, age, id_card, role, position, phone, hire_date,
-      max_per_week, status, invite_code, openid_bound, updated_at
+      max_per_week, status, invite_code, avatar_url, openid_bound, updated_at
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     ON CONFLICT(id) DO UPDATE SET
       name = excluded.name,
       gender = excluded.gender,
@@ -332,6 +335,7 @@ function replaceStaff(db, staff) {
       max_per_week = excluded.max_per_week,
       status = excluded.status,
       invite_code = excluded.invite_code,
+      avatar_url = excluded.avatar_url,
       openid_bound = excluded.openid_bound,
       updated_at = CURRENT_TIMESTAMP
   `);
@@ -356,6 +360,7 @@ function replaceStaff(db, staff) {
       Number(item.maxPerWeek) || 6,
       item.status || 'active',
       item.inviteCode || '',
+      item.avatarUrl || '',
       boolToInt(item.openidBound)
     );
     deleteMemberships.run(item.id);
