@@ -6,12 +6,14 @@ const {
   CURRENT_STAFF_KEY,
   EMPLOYEE_AUTH_KEY,
   STORE_KEY,
+  CURRENT_STORE_KEY,
   SCHEDULE_KEY,
   getStore,
   setStore
 } = require('../../utils/store');
 const { formatDate } = require('../../utils/date');
 const { matchNearestStore } = require('../../utils/location');
+const { isAdminSideRole, isSuperAdminRole, getVisibleStoresForRole, getScopedCurrentStoreId, syncTabBar } = require('../../utils/role');
 
 function pad(num) {
   return num < 10 ? `0${num}` : `${num}`;
@@ -21,6 +23,12 @@ function timeText(date) {
   return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 }
 
+function staffStoreIds(staff) {
+  if (staff.storeIds && staff.storeIds.length) return staff.storeIds;
+  if (staff.storeId) return [staff.storeId];
+  return [];
+}
+
 Page({
   data: {
     today: '',
@@ -28,7 +36,10 @@ Page({
     shifts: [],
     stores: [],
     records: [],
-    role: 'admin',
+    role: 'manager',
+    canManage: true,
+    isSuperAdmin: false,
+    currentStoreId: '',
     currentStaffName: '',
     employeeAuth: {},
     employeeReady: true,
@@ -47,13 +58,25 @@ Page({
     const today = formatDate(new Date());
     const staff = getStore(STAFF_KEY, []);
     const shifts = getStore(SHIFT_KEY, []);
-    const stores = getStore(STORE_KEY, []);
-    const role = getStore(ROLE_KEY, 'admin');
+    const role = getStore(ROLE_KEY, 'manager');
+    const canManage = isAdminSideRole(role);
+    const isSuperAdmin = isSuperAdminRole(role);
+    const allStores = getStore(STORE_KEY, []);
     const employeeAuth = getStore(EMPLOYEE_AUTH_KEY, {});
     const currentStaffId = getStore(CURRENT_STAFF_KEY, staff[0] ? staff[0].id : '');
+    const storedStoreId = getStore(CURRENT_STORE_KEY, allStores[0] ? allStores[0].id : '');
+    const currentStoreId = getScopedCurrentStoreId(role, allStores, storedStoreId, currentStaffId);
+    if (currentStoreId && currentStoreId !== storedStoreId) {
+      setStore(CURRENT_STORE_KEY, currentStoreId);
+    }
+    const stores = getVisibleStoresForRole(role, allStores, currentStaffId);
+    const visibleStoreIds = stores.map((store) => store.id);
     const currentStaffIndex = staff.findIndex((item) => item.id === currentStaffId);
     const currentStaff = staff[currentStaffIndex] || {};
-    const employeeReady = role === 'admin' || !!(employeeAuth.bound && currentStaff.status !== 'left' && employeeAuth.nickname && employeeAuth.avatarUrl && (employeeAuth.phone || employeeAuth.phoneCode || employeeAuth.manualPhone));
+    const employeeReady = canManage || !!(employeeAuth.bound && currentStaff.status !== 'left' && currentStaff.id && (employeeAuth.phone || employeeAuth.phoneCode || employeeAuth.manualPhone));
+    const visibleStaff = canManage
+      ? staff.filter((item) => isSuperAdmin || staffStoreIds(item).indexOf(currentStoreId) >= 0)
+      : staff;
     const allRecords = getStore(ATTENDANCE_KEY, []);
     const staffMap = staff.reduce((map, item) => {
       map[item.id] = item.name;
@@ -69,7 +92,11 @@ Page({
     }, {});
     const records = allRecords
       .filter((item) => item.date === today)
-      .filter((item) => role === 'admin' || item.staffId === currentStaffId)
+      .filter((item) => {
+        if (isSuperAdmin) return true;
+        if (canManage) return visibleStoreIds.indexOf(item.storeId) >= 0;
+        return item.staffId === currentStaffId;
+      })
       .map((item) => ({
         ...item,
         staffName: staffMap[item.staffId] || '未知员工',
@@ -80,17 +107,20 @@ Page({
 
     this.setData({
       today,
-      staff,
+      staff: visibleStaff,
       shifts,
       stores,
       records,
       role,
+      canManage,
+      isSuperAdmin,
+      currentStoreId,
       currentStaffName: currentStaff.name || '',
       employeeAuth,
       employeeReady,
       selectedStaffIndex: role === 'employee' ? Math.max(0, currentStaffIndex) : this.data.selectedStaffIndex,
       selectedStaffName: role === 'employee' ? (currentStaff.name || '') : this.data.selectedStaffName
-    });
+    }, () => syncTabBar(this));
   },
 
   selectStaff(event) {

@@ -1,0 +1,13 @@
+{
+  "name": "netbar-scheduler-miniprogram",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Netbar scheduler miniprogram and backend",
+  "scripts": {
+    "server": "node --disable-warning=ExperimentalWarning server/index.js",
+    "server:init": "node --disable-warning=ExperimentalWarning server/index.js --init-only"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}

@@ -2,9 +2,9 @@
   <view class="topbar">
     <view>
       <view class="title">{{monthText}}</view>
-      <view class="muted">{{role === 'admin' ? '管理端：查看和调整全部班次安排' : '员工端：只显示我的班次'}}</view>
-      <view wx:if="{{role === 'admin'}}" class="mine-tag">当前门店：{{currentStoreName || '未选择'}}</view>
-      <view wx:if="{{role === 'employee'}}" class="mine-tag">当前员工：{{currentStaffName || '未选择'}}</view>
+      <view class="muted">{{canManage ? '管理端：查看和调整门店班次安排' : '员工端：查看本门店与我的班次'}}</view>
+      <view wx:if="{{canManage}}" class="mine-tag">当前门店：{{currentStoreName || '未选择'}}</view>
+      <view wx:if="{{role === 'employee'}}" class="mine-tag">当前员工：{{currentStaffName || '未选择'}} · 本门店排班</view>
     </view>
     <view class="month-actions">
       <button class="mini-btn icon-only" bindtap="prevMonth">‹</button>
@@ -12,7 +12,7 @@
     </view>
   </view>
 
-  <view wx:if="{{role === 'admin'}}" class="toolbar">
+  <view wx:if="{{canManage}}" class="toolbar">
     <button class="btn btn-primary" bindtap="autoSchedule"><text class="btn-icon">+</text>生成本月班表</button>
     <button class="btn btn-ghost" bindtap="clearMonth"><text class="btn-icon">×</text>清空</button>
   </view>
@@ -25,15 +25,15 @@
 
   <view wx:elif="{{role === 'employee' && !rows.length}}" class="empty-state">
     <view class="section-title">本月暂无我的班次</view>
-    <view class="muted">可以回到工作台切换员工，或让管理员生成本月安排。</view>
+    <view class="muted">本门店本月暂无排班，或请让店长生成本月安排。</view>
   </view>
 
   <scroll-view wx:if="{{employeeReady}}" class="calendar-scroll" scroll-x enhanced>
     <view class="calendar {{role === 'employee' ? 'employee-calendar' : ''}}">
       <view class="grid header-row">
         <view class="name-cell header-cell">日期</view>
-        <view wx:if="{{role === 'admin'}}" wx:for="{{shifts}}" wx:key="id" class="shift-head header-cell">{{item.name}}</view>
-        <view wx:if="{{role === 'employee'}}" class="shift-head header-cell">我的班次</view>
+        <view wx:if="{{canManage}}" wx:for="{{shifts}}" wx:key="id" class="shift-head header-cell">{{item.name}}</view>
+        <view wx:if="{{role === 'employee'}}" class="shift-head header-cell">本店班次</view>
       </view>
 
       <view wx:for="{{rows}}" wx:key="date" class="grid day-row {{item.isWeekend ? 'weekend-row' : ''}}">
@@ -47,7 +47,7 @@
             <text wx:if="{{!shift.names.length}}" class="empty">未排</text>
             <text wx:for="{{shift.names}}" wx:for-item="name" wx:key="*this" class="person">{{name}}</text>
           </view>
-          <button wx:if="{{role === 'admin'}}" class="cell-btn" data-date="{{item.date}}" data-shift="{{shift.id}}" bindtap="openPicker">···</button>
+          <button wx:if="{{canManage}}" class="cell-btn" data-date="{{item.date}}" data-shift="{{shift.id}}" bindtap="openPicker">···</button>
         </view>
       </view>
     </view>

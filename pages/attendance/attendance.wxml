@@ -17,7 +17,7 @@
       </view>
     </view>
 
-    <picker wx:if="{{role === 'admin'}}" mode="selector" range="{{staff}}" range-key="name" bindchange="selectStaff">
+    <picker wx:if="{{canManage}}" mode="selector" range="{{staff}}" range-key="name" bindchange="selectStaff">
       <view class="select-box">{{selectedStaffName || '选择员工'}}</view>
     </picker>
 
@@ -33,7 +33,7 @@
   </view>
 
   <view wx:if="{{employeeReady}}" class="record-list">
-    <view class="section-title list-title">{{role === 'admin' ? '今日打卡记录' : '我的今日记录'}}</view>
+    <view class="section-title list-title">{{canManage ? '今日打卡记录' : '我的今日记录'}}</view>
     <view wx:if="{{!records.length}}" class="empty-card">暂无打卡记录</view>
     <view wx:for="{{records}}" wx:key="id" class="record-card">
       <view>

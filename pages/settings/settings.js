@@ -1,23 +1,29 @@
 const {
   STAFF_KEY,
+  STAFF_ROLE_RELATION_KEY,
   SHIFT_KEY,
   SCHEDULE_KEY,
   ROLE_KEY,
+  CURRENT_STAFF_KEY,
   EMPLOYEE_AUTH_KEY,
   INVITE_CODE_KEY,
   DEBUG_ROLE_SWITCH_KEY,
   STORE_KEY,
   CURRENT_STORE_KEY,
   defaultStaff,
+  defaultStaffRoleRelations,
   defaultStores,
   defaultShifts,
   getStore,
   setStore
 } = require('../../utils/store');
+const { isAdminSideRole, isSuperAdminRole, getVisibleStoresForRole, getScopedCurrentStoreId, syncTabBar } = require('../../utils/role');
 
 Page({
   data: {
-    role: 'admin',
+    role: 'manager',
+    canManage: true,
+    isSuperAdmin: false,
     debugRoleSwitch: true,
     shifts: [],
     stores: [],
@@ -36,13 +42,25 @@ Page({
   },
 
   refresh() {
+    const role = getStore(ROLE_KEY, 'manager');
+    const canManage = isAdminSideRole(role);
+    const isSuperAdmin = isSuperAdminRole(role);
+    const allStores = getStore(STORE_KEY, []);
+    const currentStaffId = getStore(CURRENT_STAFF_KEY, '');
+    const storedStoreId = getStore(CURRENT_STORE_KEY, allStores[0] ? allStores[0].id : '');
+    const currentStoreId = getScopedCurrentStoreId(role, allStores, storedStoreId, currentStaffId);
+    if (currentStoreId && currentStoreId !== storedStoreId) {
+      setStore(CURRENT_STORE_KEY, currentStoreId);
+    }
     this.setData({
-      role: getStore(ROLE_KEY, 'admin'),
-      debugRoleSwitch: getStore(DEBUG_ROLE_SWITCH_KEY, true),
+      role,
+      canManage,
+      isSuperAdmin,
+      debugRoleSwitch: getStore(DEBUG_ROLE_SWITCH_KEY, false),
       shifts: getStore(SHIFT_KEY, []),
-      stores: getStore(STORE_KEY, []),
-      currentStoreId: getStore(CURRENT_STORE_KEY, '')
-    });
+      stores: getVisibleStoresForRole(role, allStores, currentStaffId),
+      currentStoreId
+    }, () => syncTabBar(this));
   },
 
   toggleDebugRoleSwitch() {
@@ -85,7 +103,7 @@ Page({
   },
 
   chooseStoreLocation() {
-    if (this.data.role !== 'admin') return;
+    if (!this.data.isSuperAdmin) return;
     wx.chooseLocation({
       success: (res) => {
         this.setData({
@@ -102,13 +120,13 @@ Page({
   },
 
   addStore() {
-    if (this.data.role !== 'admin') return;
+    if (!this.data.isSuperAdmin) return;
     const { name, address, latitude, longitude, checkinRadius } = this.data.storeForm;
     if (!name.trim() || !latitude || !longitude) {
       wx.showToast({ title: '请填写门店和坐标', icon: 'none' });
       return;
     }
-    const next = this.data.stores.concat({
+    const next = getStore(STORE_KEY, []).concat({
       id: `store${Date.now()}`,
       name: name.trim(),
       address: address.trim(),
@@ -131,14 +149,14 @@ Page({
   },
 
   useStore(event) {
-    if (this.data.role !== 'admin') return;
+    if (!this.data.isSuperAdmin) return;
     const id = event.currentTarget.dataset.id;
     setStore(CURRENT_STORE_KEY, id);
     this.refresh();
   },
 
   deleteStore(event) {
-    if (this.data.role !== 'admin') return;
+    if (!this.data.isSuperAdmin) return;
     const id = event.currentTarget.dataset.id;
     if (this.data.stores.length <= 1) {
       wx.showToast({ title: '至少保留一个门店', icon: 'none' });
@@ -150,7 +168,7 @@ Page({
       confirmColor: '#b42318',
       success: (res) => {
         if (!res.confirm) return;
-        const stores = this.data.stores.filter((item) => item.id !== id);
+        const stores = getStore(STORE_KEY, []).filter((item) => item.id !== id);
         setStore(STORE_KEY, stores);
         if (this.data.currentStoreId === id) {
           setStore(CURRENT_STORE_KEY, stores[0].id);
@@ -161,7 +179,7 @@ Page({
   },
 
   changeNeed(event) {
-    if (this.data.role !== 'admin') return;
+    if (!this.data.canManage) return;
     const { id, delta } = event.currentTarget.dataset;
     const shifts = this.data.shifts.map((item) => {
       if (item.id !== id) return item;
@@ -175,13 +193,14 @@ Page({
   },
 
   resetDemo() {
-    if (this.data.role !== 'admin') return;
+    if (!this.data.isSuperAdmin) return;
     wx.showModal({
       title: '恢复演示数据',
       content: '员工和班次会恢复默认值，现有班表会保留。',
       success: (res) => {
         if (!res.confirm) return;
         setStore(STAFF_KEY, defaultStaff);
+        setStore(STAFF_ROLE_RELATION_KEY, defaultStaffRoleRelations);
         setStore(SHIFT_KEY, defaultShifts);
         setStore(STORE_KEY, defaultStores);
         setStore(CURRENT_STORE_KEY, defaultStores[0].id);
@@ -192,7 +211,7 @@ Page({
   },
 
   clearAll() {
-    if (this.data.role !== 'admin') return;
+    if (!this.data.isSuperAdmin) return;
     wx.showModal({
       title: '清空全部班表',
       content: '会删除所有月份的班表数据。',

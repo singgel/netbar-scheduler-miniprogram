@@ -12,6 +12,13 @@ const {
 } = require('../../utils/store');
 const { getMonthDays, monthLabel } = require('../../utils/date');
 const { generateMonthSchedule, staffNameMap } = require('../../utils/scheduler');
+const { isAdminSideRole, getVisibleStoresForRole, getScopedCurrentStoreId, syncTabBar } = require('../../utils/role');
+
+function staffStoreIds(staff, fallbackStoreId) {
+  if (staff.storeIds && staff.storeIds.length) return staff.storeIds;
+  if (staff.storeId) return [staff.storeId];
+  return fallbackStoreId ? [fallbackStoreId] : [];
+}
 
 Page({
   data: {
@@ -22,7 +29,8 @@ Page({
     storeStaff: [],
     shifts: [],
     rows: [],
-    role: 'admin',
+    role: 'manager',
+    canManage: true,
     stores: [],
     currentStoreId: '',
     currentStoreName: '',
@@ -52,21 +60,27 @@ Page({
     const stores = getStore(STORE_KEY, []);
     const shifts = getStore(SHIFT_KEY, []);
     const schedule = getStore(SCHEDULE_KEY, {});
-    const currentStoreId = getStore(CURRENT_STORE_KEY, stores[0] ? stores[0].id : '');
-    const currentStore = stores.find((item) => item.id === currentStoreId) || {};
-    const role = getStore(ROLE_KEY, 'admin');
+    const role = getStore(ROLE_KEY, 'manager');
+    const canManage = isAdminSideRole(role);
     const employeeAuth = getStore(EMPLOYEE_AUTH_KEY, {});
     const currentStaffId = getStore(CURRENT_STAFF_KEY, staff[0] ? staff[0].id : '');
+    const storedStoreId = getStore(CURRENT_STORE_KEY, stores[0] ? stores[0].id : '');
+    const visibleStores = getVisibleStoresForRole(role, stores, currentStaffId);
+    const currentStoreId = getScopedCurrentStoreId(role, stores, storedStoreId, currentStaffId);
+    if (currentStoreId && currentStoreId !== storedStoreId) {
+      setStore(CURRENT_STORE_KEY, currentStoreId);
+    }
+    const currentStore = visibleStores.find((item) => item.id === currentStoreId) || {};
     const currentStaff = staff.find((item) => item.id === currentStaffId) || {};
-    const employeeReady = role === 'admin' || !!(employeeAuth.bound && employeeAuth.nickname && employeeAuth.avatarUrl && (employeeAuth.phone || employeeAuth.phoneCode || employeeAuth.manualPhone));
+    const employeeReady = canManage || !!(employeeAuth.bound && currentStaff.id && (employeeAuth.phone || employeeAuth.phoneCode || employeeAuth.manualPhone));
     const days = getMonthDays(this.data.year, this.data.month);
     const names = staffNameMap(staff);
     const storeSchedule = schedule[currentStoreId] || {};
     const activeStaff = staff.filter((item) => item.status !== 'left');
-    const storeStaff = activeStaff.filter((item) => (item.storeIds || [currentStoreId]).indexOf(currentStoreId) >= 0);
+    const storeStaff = activeStaff.filter((item) => staffStoreIds(item, currentStoreId).indexOf(currentStoreId) >= 0);
     const rows = days.map((day) => {
       let visibleShifts = [];
-      if (role === 'admin') {
+      if (canManage) {
         const daySchedule = storeSchedule[day.date] || {};
         visibleShifts = shifts.map((shift) => {
           const ids = daySchedule[shift.id] || [];
@@ -77,16 +91,16 @@ Page({
           };
         });
       } else {
-        stores.forEach((store) => {
+        visibleStores.forEach((store) => {
           const daySchedule = ((schedule[store.id] || {})[day.date]) || {};
           shifts.forEach((shift) => {
             const ids = daySchedule[shift.id] || [];
-            if (ids.indexOf(currentStaffId) < 0) return;
+            if (!ids.length) return;
             visibleShifts.push({
               ...shift,
               name: `${store.name} · ${shift.name}`,
               names: ids.map((id) => names[id] || '未知员工'),
-              isMine: true
+              isMine: ids.indexOf(currentStaffId) >= 0
             });
           });
         });
@@ -94,25 +108,27 @@ Page({
       return {
         ...day,
         shifts: visibleShifts,
-        hasMine: visibleShifts.length > 0
+        hasMine: visibleShifts.some((shift) => shift.isMine),
+        hasStoreSchedule: visibleShifts.length > 0
       };
-    }).filter((day) => role === 'admin' || day.hasMine);
+    }).filter((day) => canManage || day.hasStoreSchedule);
 
     this.setData({
       staff,
       storeStaff,
       shifts,
-      stores,
+      stores: visibleStores,
       currentStoreId,
       currentStoreName: currentStore.name || '',
       role,
+      canManage,
       currentStaffId,
       currentStaffName: currentStaff.name || '',
       employeeReady,
       schedule,
       rows,
       monthText: monthLabel(this.data.year, this.data.month)
-    });
+    }, () => syncTabBar(this));
   },
 
   prevMonth() {
@@ -136,7 +152,7 @@ Page({
   },
 
   autoSchedule() {
-    if (this.data.role !== 'admin') return;
+    if (!this.data.canManage) return;
     const days = getMonthDays(this.data.year, this.data.month);
     const monthSchedule = generateMonthSchedule(days, this.data.shifts, this.data.storeStaff);
     const next = {
@@ -152,7 +168,7 @@ Page({
   },
 
   clearMonth() {
-    if (this.data.role !== 'admin') return;
+    if (!this.data.canManage) return;
     wx.showModal({
       title: '清空本月班表',
       content: '会删除当前月份所有班次安排。',
@@ -171,7 +187,7 @@ Page({
   },
 
   openPicker(event) {
-    if (this.data.role !== 'admin') return;
+    if (!this.data.canManage) return;
     const { date, shift } = event.currentTarget.dataset;
     const storeSchedule = this.data.schedule[this.data.currentStoreId] || {};
     const activeStaffIds = ((storeSchedule[date] || {})[shift] || []).slice();

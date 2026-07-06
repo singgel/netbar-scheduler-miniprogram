@@ -1,16 +1,16 @@
 <view class="page">
-  <view wx:if="{{role !== 'admin'}}" class="panel guard-panel">
+  <view wx:if="{{!canManage}}" class="panel guard-panel">
     <view class="section-title">员工端无需配置规则</view>
     <view class="muted">班次人数和数据维护由管理端处理。</view>
     <navigator class="btn btn-primary guard-btn" url="/pages/home/home" open-type="switchTab"><text class="btn-icon">←</text>回到工作台</navigator>
   </view>
 
-  <view wx:if="{{role === 'admin'}}" class="section-label">门店</view>
-  <view wx:if="{{role === 'admin'}}" class="panel">
+  <view wx:if="{{canManage}}" class="section-label">门店</view>
+  <view wx:if="{{canManage}}" class="panel">
     <view class="section-title">门店管理</view>
-    <view class="muted tip">设置门店坐标和允许打卡半径，员工打卡时会自动匹配最近门店。</view>
+    <view class="muted tip">{{isSuperAdmin ? '设置门店坐标和允许打卡半径，员工打卡时会自动匹配最近门店。' : '店长仅可查看自己门店信息。'}}</view>
 
-    <view class="store-form">
+    <view wx:if="{{isSuperAdmin}}" class="store-form">
       <input class="input" placeholder="门店名称" value="{{storeForm.name}}" data-field="name" bindinput="onStoreInput" />
       <input class="input" placeholder="门店地址" value="{{storeForm.address}}" data-field="address" bindinput="onStoreInput" />
       <view class="coord-grid">
@@ -32,15 +32,15 @@
           <view class="muted">{{item.latitude}}, {{item.longitude}} · {{item.checkinRadius}} 米</view>
         </view>
         <view class="store-card-actions">
-          <button class="small-btn {{currentStoreId === item.id ? 'active-store' : ''}}" data-id="{{item.id}}" bindtap="useStore">{{currentStoreId === item.id ? '✓' : '设为当前'}}</button>
-          <button class="small-btn delete-store" data-id="{{item.id}}" bindtap="deleteStore">×</button>
+          <button wx:if="{{isSuperAdmin}}" class="small-btn {{currentStoreId === item.id ? 'active-store' : ''}}" data-id="{{item.id}}" bindtap="useStore">{{currentStoreId === item.id ? '✓' : '设为当前'}}</button>
+          <button wx:if="{{isSuperAdmin}}" class="small-btn delete-store" data-id="{{item.id}}" bindtap="deleteStore">×</button>
         </view>
       </view>
     </view>
   </view>
 
-  <view wx:if="{{role === 'admin'}}" class="section-label">规则</view>
-  <view wx:if="{{role === 'admin'}}" class="panel config-panel">
+  <view wx:if="{{canManage}}" class="section-label">规则</view>
+  <view wx:if="{{canManage}}" class="panel config-panel">
     <view class="section-title">班次人数</view>
     <view class="muted tip">设置每个班次需要几个人，自动班表会按这里生成。</view>
     <view wx:for="{{shifts}}" wx:key="id" class="shift-config">
@@ -56,16 +56,15 @@
     </view>
   </view>
 
-  <view wx:if="{{role === 'admin'}}" class="section-label">测试</view>
-  <view wx:if="{{role === 'admin'}}" class="panel danger-panel">
+  <view wx:if="{{canManage}}" class="section-label">测试</view>
+  <view wx:if="{{canManage}}" class="panel danger-panel">
     <view class="section-title">测试工具</view>
-    <view class="muted tip">用于体验版测试同一台手机在管理端和员工端之间切换。</view>
-    <button class="btn btn-ghost" bindtap="toggleDebugRoleSwitch"><text class="btn-icon">{{debugRoleSwitch ? '−' : '+'}}</text>{{debugRoleSwitch ? '关闭角色切换入口' : '开启角色切换入口'}}</button>
+    <view class="muted tip">用于体验版清理本机身份，重新走手机号和入职码绑定流程。</view>
     <button class="btn btn-ghost" bindtap="clearEmployeeBind"><text class="btn-icon">×</text>清除本机员工绑定</button>
   </view>
 
-  <view wx:if="{{role === 'admin'}}" class="section-label">维护</view>
-  <view wx:if="{{role === 'admin'}}" class="panel danger-panel">
+  <view wx:if="{{isSuperAdmin}}" class="section-label">维护</view>
+  <view wx:if="{{isSuperAdmin}}" class="panel danger-panel">
     <view class="section-title">数据维护</view>
     <button class="btn btn-ghost" bindtap="resetDemo"><text class="btn-icon">↻</text>恢复演示数据</button>
     <button class="btn btn-danger danger-btn" bindtap="clearAll"><text class="btn-icon">×</text>清空全部班表</button>

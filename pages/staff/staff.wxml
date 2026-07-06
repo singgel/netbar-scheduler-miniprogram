@@ -1,35 +1,74 @@
-<view class="page">
-  <view wx:if="{{role !== 'admin'}}" class="panel guard-panel">
+<view class="page" bindtap="closeDropdowns">
+  <view wx:if="{{!canManage}}" class="panel guard-panel">
     <view class="section-title">员工端无需维护人员</view>
     <view class="muted">如需新增或删除员工，请切换到管理端。</view>
     <navigator class="btn btn-primary guard-btn" url="/pages/home/home" open-type="switchTab"><text class="btn-icon">←</text>回到工作台</navigator>
   </view>
 
-  <view wx:if="{{role === 'admin'}}" class="section-label">入职</view>
-  <view wx:if="{{role === 'admin'}}" class="panel add-panel">
+  <view wx:if="{{canManage}}" class="staff-menu">
+    <view class="staff-menu-item {{activeStaffMenu === 'onboard' ? 'active' : ''}}" data-menu="onboard" bindtap="switchStaffMenu">办理员工入职</view>
+    <view class="staff-menu-item {{activeStaffMenu === 'list' ? 'active' : ''}}" data-menu="list" bindtap="switchStaffMenu">查看本店员工信息</view>
+  </view>
+
+  <view wx:if="{{canManage}}" class="panel store-scope-panel">
+    <view class="field-label">当前管理门店</view>
+    <picker wx:if="{{isSuperAdmin}}" mode="selector" range="{{stores}}" range-key="name" bindchange="selectStore">
+      <view class="select-box">{{currentStoreName || '选择门店'}}</view>
+    </picker>
+    <view wx:else class="select-box">{{currentStoreName || '当前门店'}}</view>
+  </view>
+
+  <view wx:if="{{canManage && activeStaffMenu === 'onboard'}}" class="section-label">入职</view>
+  <view wx:if="{{canManage && activeStaffMenu === 'onboard'}}" class="panel add-panel">
     <view>
-      <view class="section-title">办理入职</view>
-      <view class="muted">新增员工默认归属：{{currentStoreName || '当前门店'}}</view>
+      <view class="section-title">{{editingStaffId ? '编辑员工' : '办理入职'}}</view>
+      <view wx:if="{{editingStaffId}}" class="muted">修改后点击保存更新员工资料</view>
+      <view wx:else class="muted">新增员工默认归属：{{currentStoreName || '当前门店'}}</view>
     </view>
     <view class="form-group list-panel">
       <input class="input form-input" placeholder="姓名" value="{{form.name}}" data-field="name" bindinput="onInput" />
-      <input class="input form-input" placeholder="岗位，例如收银/网管/店长" value="{{form.role}}" data-field="role" bindinput="onInput" />
+      <view class="dropdown-field">
+        <view class="select-box form-select" data-dropdown="gender" catchtap="toggleDropdown">{{form.gender || '性别'}}</view>
+        <view wx:if="{{activeDropdown === 'gender'}}" class="dropdown-menu">
+          <view wx:for="{{genderOptions}}" wx:key="value" class="dropdown-option" data-field="gender" data-value="{{item.value}}" data-label="{{item.label}}" catchtap="selectDropdownOption">{{item.label}}</view>
+        </view>
+      </view>
+      <input class="input form-input" type="idcard" maxlength="18" placeholder="身份证号，用于自动计算年龄" value="{{form.idCard}}" data-field="idCard" bindinput="onInput" />
+      <input class="input form-input" type="number" placeholder="年龄" value="{{form.age}}" data-field="age" bindinput="onInput" />
+      <view class="dropdown-field">
+        <view class="select-box form-select" data-dropdown="position" catchtap="toggleDropdown">职位：{{form.role || '店长/收银/网管'}}</view>
+        <view wx:if="{{activeDropdown === 'position'}}" class="dropdown-menu">
+          <view wx:for="{{positionOptions}}" wx:key="value" class="dropdown-option" data-field="position" data-value="{{item.value}}" data-label="{{item.label}}" catchtap="selectDropdownOption">{{item.label}}</view>
+        </view>
+      </view>
       <input class="input form-input" type="number" placeholder="手机号，用于员工端自动匹配" value="{{form.phone}}" data-field="phone" bindinput="onInput" />
+      <picker mode="date" value="{{form.hireDate}}" bindchange="selectHireDate">
+        <view class="select-box form-select date-select">入职时间：{{form.hireDate}}</view>
+      </picker>
       <input class="input form-input" type="number" placeholder="每周最多班次数" value="{{form.maxPerWeek}}" data-field="maxPerWeek" bindinput="onInput" />
     </view>
-    <button class="btn btn-primary" bindtap="addStaff"><text class="btn-icon">+</text>生成入职邀请</button>
+    <view class="form-actions">
+      <button class="btn btn-primary" bindtap="saveStaff"><text class="btn-icon">✓</text>保存</button>
+      <button wx:if="{{editingStaffId}}" class="btn btn-ghost" bindtap="cancelEdit">取消编辑</button>
+    </view>
   </view>
 
-  <view wx:if="{{role === 'admin'}}" class="section-label">员工</view>
-  <view wx:if="{{role === 'admin'}}" class="staff-list list-panel">
+  <view wx:if="{{canManage && activeStaffMenu === 'list'}}" class="section-label">员工</view>
+  <view wx:if="{{canManage && activeStaffMenu === 'list'}}" class="staff-list list-panel">
     <view wx:for="{{staff}}" wx:key="id" class="staff-card">
       <view>
         <view class="staff-name">{{item.name}}</view>
-        <view class="muted">{{item.role}} · {{item.phone || '未填手机号'}} · {{item.storeNames}} · 每周最多 {{item.maxPerWeek}} 班</view>
+        <view class="muted">{{item.role}} · {{item.gender || '性别未填'}} · {{item.age || '年龄未填'}}岁 · 身份：{{item.systemRoleText}} · {{item.phone || '未填手机号'}} · {{item.storeNames}} · 每周最多 {{item.maxPerWeek}} 班</view>
+        <view class="muted">身份证号：{{item.idCard || '未填'}}</view>
+        <view class="muted">入职时间：{{item.hireDate || '未填'}}</view>
         <view class="invite-line">入职码：{{item.inviteCode}} · {{item.statusText}}</view>
       </view>
-      <button wx:if="{{item.status !== 'left'}}" class="delete-btn" data-id="{{item.id}}" bindtap="markLeft">×</button>
-      <button wx:else class="restore-btn" data-id="{{item.id}}" bindtap="restoreStaff">↻</button>
+      <view class="staff-actions">
+        <button class="edit-btn" data-id="{{item.id}}" bindtap="startEdit">编辑</button>
+        <button wx:if="{{item.status !== 'left'}}" class="leave-btn" data-id="{{item.id}}" bindtap="markLeft">离职</button>
+        <button wx:else class="delete-text-btn" data-id="{{item.id}}" bindtap="deleteStaff">删除</button>
+      </view>
     </view>
+    <view wx:if="{{!staff.length}}" class="empty-staff">本店暂无员工</view>
   </view>
 </view>

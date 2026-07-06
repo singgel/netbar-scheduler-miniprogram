@@ -3,6 +3,7 @@
   "appid": "wxb0907700ffbeb1e3",
   "projectname": "netbar-scheduler",
   "miniprogramRoot": "./",
+  "cloudfunctionRoot": "cloudfunctions/",
   "compileType": "miniprogram",
   "setting": {
     "urlCheck": false,
@@ -34,5 +35,7 @@
     "ignore": [],
     "include": []
   },
-  "editorSetting": {}
+  "editorSetting": {},
+  "libVersion": "3.16.2",
+  "cloudfunctionTemplateRoot": "cloudfunctionTemplate/"
 }
