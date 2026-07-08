@@ -80,9 +80,14 @@
 
 .toolbar {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 120rpx;
+  grid-template-columns: minmax(0, 1fr) 120rpx 120rpx;
   gap: 14rpx;
   margin-bottom: 20rpx;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: 14rpx 0 14rpx;
+  background: #f7f8fa;
 }
 
 .toolbar .btn {
@@ -391,4 +396,113 @@
 .checked {
   color: #ffffff;
   background: #07c160;
+}
+
+.print-mask {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(31, 35, 41, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.print-sheet {
+  width: 92vw;
+  max-width: 640rpx;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #ffffff;
+  border-radius: 20rpx;
+  padding: 28rpx 24rpx;
+  box-sizing: border-box;
+}
+
+.print-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rpx;
+  padding-bottom: 18rpx;
+  border-bottom: 1rpx solid #edf0f5;
+  flex-shrink: 0;
+}
+
+.print-head .sheet-close {
+  width: auto;
+  height: auto;
+  min-width: 0;
+  background: transparent;
+  color: #8a8f99;
+  font-size: 44rpx;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.print-title {
+  color: #1f2329;
+  font-size: 34rpx;
+  font-weight: 800;
+  line-height: 46rpx;
+}
+
+.print-subtitle {
+  margin-top: 6rpx;
+  font-size: 26rpx;
+  line-height: 36rpx;
+}
+
+.print-canvas-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 20rpx 0;
+  border: 1rpx solid #edf0f5;
+  border-radius: 12rpx;
+  background: #f7f8fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.print-canvas {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  width: 1123px;
+  height: 794px;
+}
+
+.print-preview {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  display: block;
+}
+
+.print-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14rpx;
+  flex-shrink: 0;
+}
+
+.print-actions .btn {
+  width: 100%;
+  min-width: 0;
+}
+
+.print-tip {
+  margin-top: 14rpx;
+  font-size: 23rpx;
+  line-height: 32rpx;
+  text-align: center;
 }

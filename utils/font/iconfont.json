@@ -1,0 +1,72 @@
+{
+  "id": "",
+  "name": "",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "1364673",
+      "name": "API测试",
+      "font_class": "APIceshi",
+      "unicode": "e669",
+      "unicode_decimal": 58985
+    },
+    {
+      "icon_id": "1472512",
+      "name": "签到-考勤打卡",
+      "font_class": "qiandao-kaoqindaqia",
+      "unicode": "e62b",
+      "unicode_decimal": 58923
+    },
+    {
+      "icon_id": "1727476",
+      "name": "235考勤、出勤",
+      "font_class": "kaoqinchuqin",
+      "unicode": "e8d0",
+      "unicode_decimal": 59600
+    },
+    {
+      "icon_id": "8605719",
+      "name": "规则管理",
+      "font_class": "guizeguanli",
+      "unicode": "e663",
+      "unicode_decimal": 58979
+    },
+    {
+      "icon_id": "11435454",
+      "name": "入职管理",
+      "font_class": "ruzhiguanli",
+      "unicode": "e611",
+      "unicode_decimal": 58897
+    },
+    {
+      "icon_id": "15668866",
+      "name": "排班1",
+      "font_class": "paiban1",
+      "unicode": "e77d",
+      "unicode_decimal": 59261
+    },
+    {
+      "icon_id": "47081573",
+      "name": "个人信息",
+      "font_class": "gerenxinxi",
+      "unicode": "e512",
+      "unicode_decimal": 58642
+    },
+    {
+      "icon_id": "47082727",
+      "name": "设置",
+      "font_class": "shezhi",
+      "unicode": "e515",
+      "unicode_decimal": 58645
+    },
+    {
+      "icon_id": "47737830",
+      "name": "好友",
+      "font_class": "wodehaoyou",
+      "unicode": "e519",
+      "unicode_decimal": 58649
+    }
+  ]
+}

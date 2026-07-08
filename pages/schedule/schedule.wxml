@@ -14,6 +14,7 @@
 
   <view wx:if="{{canManage}}" class="toolbar">
     <button class="btn btn-primary" bindtap="autoSchedule"><text class="btn-icon">+</text>生成本月班表</button>
+    <button class="btn btn-ghost" bindtap="printSchedule"><text class="btn-icon">🖨</text>打印</button>
     <button class="btn btn-ghost" bindtap="clearMonth"><text class="btn-icon">×</text>清空</button>
   </view>
 
@@ -83,6 +84,32 @@
       <view class="sheet-actions">
         <button class="btn btn-primary" bindtap="savePicker"><text class="btn-icon">✓</text>保存</button>
       </view>
+    </view>
+  </view>
+
+  <view wx:if="{{printVisible}}" class="print-mask" catchtap="closePrint">
+    <view class="print-sheet" catchtap="noop">
+      <view class="print-head">
+        <view>
+          <view class="print-title">A4 横排班表预览</view>
+          <view class="muted print-subtitle">{{monthText}} · {{currentStoreName}}</view>
+        </view>
+        <button class="sheet-close" bindtap="closePrint">×</button>
+      </view>
+      <view class="print-canvas-wrap">
+        <canvas
+          type="2d"
+          id="printCanvas"
+          class="print-canvas"
+          style="width: 1123px; height: 794px;"
+        ></canvas>
+        <image wx:if="{{printTempPath}}" class="print-preview" src="{{printTempPath}}" mode="aspectFit" show-menu-by-longpress></image>
+      </view>
+      <view class="print-actions">
+        <button class="btn btn-ghost" bindtap="previewPrintImage">查看大图</button>
+        <button class="btn btn-primary" bindtap="savePrintImage" loading="{{printSaving}}"><text class="btn-icon">⬇</text>保存到相册</button>
+      </view>
+      <view class="muted print-tip">保存到相册后，可在打印店或办公室打印机打印为 A4 横向纸张。</view>
     </view>
   </view>
 </view>

@@ -21,6 +21,18 @@ function normalizeIdCard(idCard) {
   return String(idCard || '').trim().toUpperCase();
 }
 
+function defaultPasswordFromPhone(phone) {
+  const digits = String(phone || '').replace(/\D/g, '');
+  if (digits.length >= 6) return digits.slice(-6);
+  if (digits.length > 0) return digits.padStart(6, '0');
+  return '123456';
+}
+
+function resolveStaffPassword(staff) {
+  if (staff && staff.password) return staff.password;
+  return defaultPasswordFromPhone(staff && staff.phone);
+}
+
 function birthDateFromIdCard(idCard) {
   const value = normalizeIdCard(idCard);
   let birth = '';
@@ -186,7 +198,9 @@ Page({
         nameInitial: firstChar(item.name, '员'),
         statusText: item.status === 'left' ? '已离职' : (item.openidBound ? '已绑定' : '待注册'),
         storeNames: staffStoreIds(item, currentStoreId).map((id) => storeMap[id] || '未知门店').join('、'),
-        systemRoleText: roleText((relationMap[item.id] || {}).role)
+        systemRoleText: roleText((relationMap[item.id] || {}).role),
+        loginPassword: isSuperAdmin ? resolveStaffPassword(item) : '',
+        canViewPassword: !!isSuperAdmin
       }))
       .filter((item) => item.systemRole !== 'super_admin')
       .filter((item) => matchesStaffSearch(item, staffSearchKeyword))
@@ -224,6 +238,14 @@ Page({
     this.setData({
       staffSearchKeyword: ''
     }, () => this.refresh());
+  },
+
+  togglePasswordVisible(event) {
+    const id = event.currentTarget.dataset.id;
+    const staff = this.data.staff.map((item) => (
+      item.id === id ? { ...item, passwordVisible: !item.passwordVisible } : item
+    ));
+    this.setData({ staff });
   },
 
   switchStaffMenu(event) {
@@ -344,7 +366,10 @@ Page({
       avatarUrl: existingStaff.avatarUrl || '',
       openidBound: this.data.editingStaffId
         ? !!existingStaff.openidBound
-        : false
+        : false,
+      password: this.data.editingStaffId
+        ? (existingStaff.password || '')
+        : ''
     };
     const next = this.data.editingStaffId
       ? rawStaff.map((item) => (item.id === staffId ? { ...item, ...savedStaff } : item))

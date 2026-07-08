@@ -1,6 +1,6 @@
 {
   "description": "班次小助手",
-  "appid": "wxb0907700ffbeb1e3",
+  "appid": "wx2a59c00efdd5c6a2",
   "projectname": "netbar-scheduler",
   "miniprogramRoot": "./",
   "cloudfunctionRoot": "cloudfunctions/",

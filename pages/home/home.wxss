@@ -1,3 +1,5 @@
+@import "/utils/font/icons-svg.wxss";
+
 .login-page {
   min-height: 100vh;
   padding: 88rpx 44rpx 48rpx;
@@ -535,9 +537,9 @@
 }
 
 .mini-icon {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 18rpx;
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 22rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -546,15 +548,23 @@
   overflow: hidden;
 }
 
-.mini-icon::after {
-  content: "";
-  position: absolute;
-  left: 12rpx;
-  right: 12rpx;
-  top: 8rpx;
-  height: 22rpx;
-  border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.18);
+.mini-icon .icon-glyph {
+  width: 46rpx;
+  height: 46rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.icon-schedule .icon-glyph {
+  width: 58rpx;
+  height: 58rpx;
+}
+
+.icon-staff .icon-glyph,
+.icon-settings .icon-glyph {
+  width: 56rpx;
+  height: 56rpx;
 }
 
 .mini-title {
@@ -569,162 +579,33 @@
 }
 
 .icon-schedule {
-  background: linear-gradient(135deg, #2cc8ff 0%, #1588ff 100%);
+  background: rgba(21, 136, 255, 0.8);
 }
 
 .icon-onboard {
-  background: linear-gradient(135deg, #22d6a8 0%, #08bf72 100%);
+  background: rgba(8, 191, 114, 0.8);
 }
 
 .icon-staff {
-  background: linear-gradient(135deg, #7d90ff 0%, #4268ff 100%);
+  background: rgba(66, 104, 255, 0.8);
 }
 
 .icon-store {
-  background: linear-gradient(135deg, #19cfbd 0%, #00a889 100%);
+  background: rgba(0, 168, 137, 0.8);
 }
 
 .icon-shift {
-  background: linear-gradient(135deg, #ffc83d 0%, #ffad18 100%);
+  background: rgba(255, 159, 24, 0.8);
 }
 
 .icon-test {
-  background: linear-gradient(135deg, #ff7777 0%, #f05252 100%);
+  background: rgba(240, 82, 82, 0.8);
 }
 
 .icon-settings {
-  background: linear-gradient(135deg, #9a7cff 0%, #6f55f5 100%);
+  background: rgba(111, 85, 245, 0.8);
 }
 
 .icon-attendance {
-  background: linear-gradient(135deg, #44dab2 0%, #09bf78 100%);
-}
-
-.icon-calendar-shape,
-.icon-person-shape,
-.icon-shop-shape,
-.icon-clock-shape,
-.icon-settings-shape {
-  width: 40rpx;
-  height: 40rpx;
-  border: 6rpx solid #ffffff;
-  border-radius: 10rpx;
-  box-sizing: border-box;
-  position: relative;
-  z-index: 1;
-}
-
-.icon-calendar-shape::before {
-  content: "";
-  position: absolute;
-  left: -6rpx;
-  right: -6rpx;
-  top: 10rpx;
-  height: 6rpx;
-  background: #ffffff;
-}
-
-.icon-calendar-shape::after {
-  content: "";
-  position: absolute;
-  left: 8rpx;
-  top: 24rpx;
-  width: 8rpx;
-  height: 8rpx;
-  border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 16rpx 0 0 #ffffff;
-}
-
-.icon-plus-person,
-.icon-check-shape,
-.icon-tool-shape {
-  color: #ffffff;
-  font-size: 48rpx;
-  font-weight: 900;
-  line-height: 1;
-  position: relative;
-  z-index: 1;
-}
-
-.icon-person-shape {
-  border-radius: 50% 50% 16rpx 16rpx;
-}
-
-.icon-person-shape::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -22rpx;
-  width: 54rpx;
-  height: 34rpx;
-  border-radius: 50%;
-  border: 6rpx solid #ffffff;
-  transform: translateX(-50%);
-}
-
-.icon-shop-shape::before {
-  content: "";
-  position: absolute;
-  left: -8rpx;
-  right: -8rpx;
-  top: -16rpx;
-  height: 20rpx;
-  border-radius: 8rpx 8rpx 2rpx 2rpx;
-  background: #ffffff;
-}
-
-.icon-clock-shape {
-  border-radius: 50%;
-}
-
-.icon-clock-shape::before,
-.icon-clock-shape::after {
-  content: "";
-  position: absolute;
-  left: 18rpx;
-  top: 8rpx;
-  width: 6rpx;
-  height: 18rpx;
-  border-radius: 4rpx;
-  background: #ffffff;
-}
-
-.icon-clock-shape::after {
-  top: 20rpx;
-  width: 18rpx;
-  height: 6rpx;
-}
-
-.icon-settings-shape {
-  border-radius: 50%;
-}
-
-.icon-settings-shape::before,
-.icon-settings-shape::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: -12rpx;
-  width: 6rpx;
-  height: 52rpx;
-  border-radius: 999rpx;
-  background: #ffffff;
-  transform: translateX(-50%);
-}
-
-.icon-settings-shape::after {
-  transform: translateX(-50%) rotate(90deg);
-}
-
-.icon-settings-dot {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 12rpx;
-  height: 12rpx;
-  border-radius: 50%;
-  background: #ffffff;
-  transform: translate(-50%, -50%);
-  z-index: 2;
+  background: rgba(9, 191, 120, 0.8);
 }

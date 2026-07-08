@@ -94,6 +94,13 @@
           <text class="info-label">入职码</text>
           <text class="info-value invite-value">{{item.inviteCode}}</text>
         </view>
+        <view wx:if="{{item.canViewPassword}}" class="staff-info-item full">
+          <text class="info-label">登录密码</text>
+          <view class="password-value-row">
+            <text class="info-value password-value">{{item.passwordVisible ? item.loginPassword : '••••••'}}</text>
+            <view class="password-toggle" data-id="{{item.id}}" catchtap="togglePasswordVisible">{{item.passwordVisible ? '隐藏' : '显示'}}</view>
+          </view>
+        </view>
       </view>
 
       <view class="staff-actions">

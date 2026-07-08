@@ -51,7 +51,10 @@ Page({
     activeShift: '',
     activeShiftName: '',
     activeStaffIds: [],
-    staffOptions: []
+    staffOptions: [],
+    printVisible: false,
+    printTempPath: '',
+    printSaving: false
   },
 
   onLoad() {
@@ -266,5 +269,252 @@ Page({
     setStore(SCHEDULE_KEY, schedule);
     this.setData({ pickerVisible: false });
     this.refresh();
+  },
+
+  printSchedule() {
+    if (!this.data.canManage) return;
+    if (!this.data.rows.length) {
+      wx.showToast({ title: '本月暂无排班', icon: 'none' });
+      return;
+    }
+    this.setData({ printVisible: true }, () => {
+      wx.nextTick(() => this.renderPrintCanvas());
+    });
+  },
+
+  renderPrintCanvas() {
+    const query = wx.createSelectorQuery();
+    query.select('#printCanvas')
+      .fields({ node: true, size: true })
+      .exec((res) => {
+        if (!res || !res[0] || !res[0].node) {
+          wx.showToast({ title: '画布初始化失败', icon: 'none' });
+          this.setData({ printVisible: false });
+          return;
+        }
+        const canvas = res[0].node;
+        const ctx = canvas.getContext('2d');
+        const dpr = wx.getSystemInfoSync().pixelRatio || 2;
+        const cssWidth = 1123;
+        const cssHeight = 794;
+        canvas.width = cssWidth * dpr;
+        canvas.height = cssHeight * dpr;
+        ctx.scale(dpr, dpr);
+        this.drawSchedule(ctx, cssWidth, cssHeight);
+        wx.canvasToTempFilePath({
+          canvas,
+          success: (out) => {
+            this.setData({ printTempPath: out.tempFilePath });
+          },
+          fail: () => {
+            wx.showToast({ title: '渲染失败', icon: 'none' });
+            this.setData({ printVisible: false });
+          }
+        }, this);
+      });
+  },
+
+  drawSchedule(ctx, width, height) {
+    const { rows, shifts, monthText, currentStoreName, currentStaffName } = this.data;
+    const names = staffNameMap(this.data.staff);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, width, height);
+
+    const margin = 36;
+    let y = margin;
+
+    ctx.fillStyle = '#1f2329';
+    ctx.font = 'bold 22px sans-serif';
+    ctx.textBaseline = 'top';
+    ctx.fillText(`${currentStoreName || ''} 排班表`, margin, y);
+
+    ctx.fillStyle = '#646a73';
+    ctx.font = '14px sans-serif';
+    ctx.fillText(`${monthText}${currentStaffName ? ` · 当班人：${currentStaffName}` : ''}`, margin, y + 30);
+
+    ctx.fillStyle = '#8a8f99';
+    ctx.font = '12px sans-serif';
+    const now = new Date();
+    const printedAt = `打印时间：${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const timeWidth = ctx.measureText(printedAt).width;
+    ctx.fillText(printedAt, width - margin - timeWidth, y + 6);
+    y += 58;
+
+    const tableWidth = width - margin * 2;
+    const dateColWidth = 78;
+    const shiftColWidth = (tableWidth - dateColWidth) / shifts.length;
+    const rowHeight = Math.max(34, Math.min(46, (height - y - margin - 24) / rows.length));
+
+    const tableTop = y;
+    ctx.lineWidth = 1;
+
+    ctx.fillStyle = '#f2f6ff';
+    ctx.fillRect(margin, tableTop, tableWidth, rowHeight);
+
+    ctx.strokeStyle = '#d6dbe0';
+    ctx.beginPath();
+    ctx.moveTo(margin, tableTop);
+    ctx.lineTo(margin + tableWidth, tableTop);
+    ctx.stroke();
+
+    let colX = margin;
+    ctx.fillStyle = '#1f2329';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('日期', colX + 10, tableTop + 11);
+    colX += dateColWidth;
+    shifts.forEach((shift) => {
+      ctx.fillStyle = shift.color || '#eaf6ff';
+      ctx.fillRect(colX + 1, tableTop + 1, shiftColWidth - 2, rowHeight - 2);
+      ctx.fillStyle = '#1f2329';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillText(`${shift.name} ${shift.time || ''}`, colX + 8, tableTop + 6);
+      ctx.fillStyle = '#8a8f99';
+      ctx.font = '11px sans-serif';
+      ctx.fillText(`需 ${shift.need || 0} 人`, colX + 8, tableTop + 22);
+      colX += shiftColWidth;
+    });
+
+    ctx.strokeStyle = '#d6dbe0';
+    ctx.beginPath();
+    ctx.moveTo(margin, tableTop + rowHeight);
+    ctx.lineTo(margin + tableWidth, tableTop + rowHeight);
+    ctx.stroke();
+
+    let rowY = tableTop + rowHeight;
+    rows.forEach((day, index) => {
+      const isAlt = index % 2 === 1;
+      ctx.fillStyle = isAlt ? '#fafbfc' : '#ffffff';
+      ctx.fillRect(margin, rowY, tableWidth, rowHeight);
+
+      let cellX = margin;
+      ctx.fillStyle = day.isWeekend ? '#c0392b' : '#1f2329';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(`${day.day}日`, cellX + 10, rowY + 6);
+      ctx.fillStyle = '#8a8f99';
+      ctx.font = '11px sans-serif';
+      ctx.fillText(day.week || '', cellX + 10, rowY + 22);
+      cellX += dateColWidth;
+
+      shifts.forEach((shift) => {
+        const dayShifts = day.shifts || [];
+        const matched = dayShifts.find((item) => item.id === shift.id);
+        const ids = matched ? (matched.names || []) : [];
+        ctx.fillStyle = shift.color || '#eaf6ff';
+        if (ids.length) {
+          ctx.globalAlpha = 0.35;
+          ctx.fillRect(cellX + 1, rowY + 1, shiftColWidth - 2, rowHeight - 2);
+          ctx.globalAlpha = 1;
+        }
+        ctx.fillStyle = '#343842';
+        ctx.font = '11px sans-serif';
+        const text = ids.length ? ids.map((id) => names[id] || id).join('、') : '—';
+        this.drawWrapText(ctx, text, cellX + 8, rowY + 8, shiftColWidth - 16, 13);
+        cellX += shiftColWidth;
+      });
+
+      ctx.strokeStyle = '#e5e6eb';
+      ctx.beginPath();
+      ctx.moveTo(margin, rowY + rowHeight);
+      ctx.lineTo(margin + tableWidth, rowY + rowHeight);
+      ctx.stroke();
+      rowY += rowHeight;
+    });
+
+    ctx.strokeStyle = '#d6dbe0';
+    colX = margin + dateColWidth;
+    shifts.forEach(() => {
+      ctx.beginPath();
+      ctx.moveTo(colX, tableTop);
+      ctx.lineTo(colX, rowY);
+      ctx.stroke();
+      colX += shiftColWidth;
+    });
+    ctx.beginPath();
+    ctx.moveTo(margin, tableTop);
+    ctx.lineTo(margin, rowY);
+    ctx.moveTo(margin + tableWidth, tableTop);
+    ctx.lineTo(margin + tableWidth, rowY);
+    ctx.stroke();
+
+    ctx.fillStyle = '#8a8f99';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'left';
+    const legendY = rowY + 14;
+    let legendX = margin;
+    ctx.fillText('图例：', legendX, legendY);
+    legendX += 42;
+    shifts.forEach((shift) => {
+      ctx.fillStyle = shift.color || '#eaf6ff';
+      ctx.fillRect(legendX, legendY + 2, 14, 12);
+      ctx.strokeStyle = '#d6dbe0';
+      ctx.strokeRect(legendX, legendY + 2, 14, 12);
+      ctx.fillStyle = '#646a73';
+      ctx.font = '11px sans-serif';
+      ctx.fillText(shift.name, legendX + 20, legendY + 2);
+      legendX += 20 + ctx.measureText(shift.name).width + 24;
+    });
+  },
+
+  drawWrapText(ctx, text, x, y, maxWidth, lineHeight) {
+    const chars = String(text || '').split('');
+    let line = '';
+    let lineY = y;
+    for (let i = 0; i < chars.length; i += 1) {
+      const test = line + chars[i];
+      if (ctx.measureText(test).width > maxWidth && line) {
+        ctx.fillText(line, x, lineY);
+        line = chars[i];
+        lineY += lineHeight;
+        if (lineY > y + lineHeight) break;
+      } else {
+        line = test;
+      }
+    }
+    if (line && lineY <= y + lineHeight) {
+      ctx.fillText(line, x, lineY);
+    }
+  },
+
+  closePrint() {
+    this.setData({ printVisible: false, printTempPath: '' });
+  },
+
+  previewPrintImage() {
+    if (!this.data.printTempPath) return;
+    wx.previewImage({
+      current: this.data.printTempPath,
+      urls: [this.data.printTempPath]
+    });
+  },
+
+  savePrintImage() {
+    if (!this.data.printTempPath || this.data.printSaving) return;
+    this.setData({ printSaving: true });
+    wx.saveImageToPhotosAlbum({
+      filePath: this.data.printTempPath,
+      success: () => {
+        wx.showToast({ title: '已保存到相册', icon: 'success' });
+      },
+      fail: (err) => {
+        if (err && err.errMsg && err.errMsg.indexOf('auth deny') >= 0) {
+          wx.showModal({
+            title: '需要相册权限',
+            content: '请在设置中允许保存图片到相册。',
+            confirmText: '去设置',
+            success: (res) => {
+              if (res.confirm) wx.openSetting();
+            }
+          });
+        } else {
+          wx.showToast({ title: '保存失败', icon: 'none' });
+        }
+      },
+      complete: () => {
+        this.setData({ printSaving: false });
+      }
+    });
   }
 });
