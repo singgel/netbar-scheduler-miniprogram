@@ -9,7 +9,7 @@
       </picker>
       <view class="schedule-count">{{visibleSchedule.length}} 个班次</view>
     </view>
-    <view wx:for="{{visibleSchedule}}" wx:key="key" class="schedule-row">
+    <view wx:for="{{visibleSchedule}}" wx:key="key" class="schedule-row {{item.isPast ? 'past' : ''}}">
       <view class="date-chip">
         <view class="date-day">{{item.day}}</view>
         <view class="date-week">{{item.week}}</view>

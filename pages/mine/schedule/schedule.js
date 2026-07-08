@@ -71,6 +71,7 @@ Page({
       return map;
     }, {});
     const now = new Date();
+    const todayStr = formatDate(now);
     const days = getMonthDays(now.getFullYear(), now.getMonth() + 1);
     const dayMap = days.reduce((map, day) => {
       map[day.date] = day;
@@ -94,7 +95,8 @@ Page({
             date,
             shiftName: shift.name || '班次',
             time: shift.time || '',
-            storeName: store.name || '未知门店'
+            storeName: store.name || '未知门店',
+            isPast: date < todayStr
           });
         });
       });

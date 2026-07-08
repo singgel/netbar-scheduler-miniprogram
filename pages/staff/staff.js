@@ -277,14 +277,15 @@ Page({
   onInput(event) {
     const field = event.currentTarget.dataset.field;
     const value = event.detail.value;
-    const nextData = {
-      [`form.${field}`]: value
-    };
-    if (field === 'idCard') {
-      const age = calculateAgeFromIdCard(value);
-      if (age !== '') nextData['form.age'] = age;
+    this.setData({ [`form.${field}`]: value });
+  },
+
+  calcAgeFromIdCard(event) {
+    const value = event.detail.value;
+    const age = calculateAgeFromIdCard(value);
+    if (age !== '') {
+      this.setData({ 'form.age': age });
     }
-    this.setData(nextData);
   },
 
   noop() {},

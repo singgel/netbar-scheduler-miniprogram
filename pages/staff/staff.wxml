@@ -25,7 +25,7 @@
           <view wx:for="{{genderOptions}}" wx:key="value" class="dropdown-option" data-field="gender" data-value="{{item.value}}" data-label="{{item.label}}" catchtap="selectDropdownOption">{{item.label}}</view>
         </view>
       </view>
-      <input class="input form-input" type="idcard" maxlength="18" placeholder="身份证号，用于自动计算年龄" value="{{form.idCard}}" data-field="idCard" bindinput="onInput" />
+      <input class="input form-input" type="idcard" maxlength="18" placeholder="身份证号" value="{{form.idCard}}" data-field="idCard" bindinput="onInput" bindblur="calcAgeFromIdCard" />
       <input class="input form-input" type="number" placeholder="年龄" value="{{form.age}}" data-field="age" bindinput="onInput" />
       <view class="dropdown-field">
         <view class="select-box form-select" data-dropdown="position" catchtap="toggleDropdown">职位：{{form.role || '店长/收银/网管'}}</view>
@@ -33,7 +33,7 @@
           <view wx:for="{{positionOptions}}" wx:key="value" class="dropdown-option" data-field="position" data-value="{{item.value}}" data-label="{{item.label}}" catchtap="selectDropdownOption">{{item.label}}</view>
         </view>
       </view>
-      <input class="input form-input" type="number" placeholder="手机号，用于员工端自动匹配" value="{{form.phone}}" data-field="phone" bindinput="onInput" />
+      <input class="input form-input" type="number" placeholder="手机号" value="{{form.phone}}" data-field="phone" bindinput="onInput" />
       <picker mode="date" value="{{form.hireDate}}" bindchange="selectHireDate">
         <view class="select-box form-select date-select">入职时间：{{form.hireDate}}</view>
       </picker>

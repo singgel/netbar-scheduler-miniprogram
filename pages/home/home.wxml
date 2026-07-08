@@ -130,18 +130,6 @@
           </view>
           <view class="mini-title">员工查询</view>
         </view>
-        <navigator class="mini-app" url="/pages/settings/settings" hover-class="none">
-          <view class="mini-icon icon-store">
-            <view class="icon-glyph"></view>
-          </view>
-          <view class="mini-title">门店规则</view>
-        </navigator>
-        <navigator class="mini-app" url="/pages/settings/settings" hover-class="none">
-          <view class="mini-icon icon-shift">
-            <view class="icon-glyph"></view>
-          </view>
-          <view class="mini-title">班次人数</view>
-        </navigator>
       </view>
     </view>
 

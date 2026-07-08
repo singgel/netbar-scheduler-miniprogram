@@ -316,145 +316,153 @@ Page({
 
   drawSchedule(ctx, width, height) {
     const { rows, shifts, monthText, currentStoreName, currentStaffName } = this.data;
-    const names = staffNameMap(this.data.staff);
 
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
 
     const margin = 36;
-    let y = margin;
-
+    // ---- 标题区 ----
+    ctx.textBaseline = 'top';
+    ctx.textAlign = 'left';
     ctx.fillStyle = '#1f2329';
     ctx.font = 'bold 22px sans-serif';
-    ctx.textBaseline = 'top';
-    ctx.fillText(`${currentStoreName || ''} 排班表`, margin, y);
+    ctx.fillText(`${currentStoreName || ''} 排班表`, margin, margin);
 
     ctx.fillStyle = '#646a73';
     ctx.font = '14px sans-serif';
-    ctx.fillText(`${monthText}${currentStaffName ? ` · 当班人：${currentStaffName}` : ''}`, margin, y + 30);
+    ctx.fillText(`${monthText}${currentStaffName ? ` · 当班人：${currentStaffName}` : ''}`, margin, margin + 30);
 
     ctx.fillStyle = '#8a8f99';
     ctx.font = '12px sans-serif';
     const now = new Date();
     const printedAt = `打印时间：${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const timeWidth = ctx.measureText(printedAt).width;
-    ctx.fillText(printedAt, width - margin - timeWidth, y + 6);
-    y += 58;
+    ctx.fillText(printedAt, width - margin - timeWidth, margin + 6);
 
-    const tableWidth = width - margin * 2;
-    const dateColWidth = 78;
-    const shiftColWidth = (tableWidth - dateColWidth) / shifts.length;
-    const rowHeight = Math.max(34, Math.min(46, (height - y - margin - 24) / rows.length));
+    // ---- 月历网格 ----
+    const gridTop = margin + 64;
+    const gridWidth = width - margin * 2;
+    const headerH = 30;
+    const cols = 7;
+    const colWidth = gridWidth / cols;
+    const weekHeaders = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 
-    const tableTop = y;
+    // 星期表头
+    ctx.fillStyle = '#f2f3f5';
+    ctx.fillRect(margin, gridTop, gridWidth, headerH);
+    ctx.fillStyle = '#646a73';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.textAlign = 'center';
+    weekHeaders.forEach((w, i) => {
+      ctx.fillText(w, margin + colWidth * i + colWidth / 2, gridTop + 9);
+    });
+    ctx.textAlign = 'left';
+
+    // 计算前置空格与行数
+    const firstDay = rows.length ? new Date(this.data.year, this.data.month - 1, 1) : new Date();
+    const leading = firstDay.getDay(); // 0=周日
+    const totalCells = leading + rows.length;
+    const rowCount = Math.ceil(totalCells / cols);
+    const gridBodyTop = gridTop + headerH;
+    const gridBodyHeight = height - gridBodyTop - margin;
+    const rowHeight = gridBodyHeight / rowCount;
+
+    // 单元格
+    ctx.textBaseline = 'top';
+    let cellIndex = 0;
+    // 前置空格
+    for (let i = 0; i < leading; i += 1) {
+      this.drawCalendarCell(ctx, null, margin, gridBodyTop, colWidth, rowHeight, i);
+      cellIndex += 1;
+    }
+    // 实际日期
+    rows.forEach((day) => {
+      this.drawCalendarCell(ctx, day, margin, gridBodyTop, colWidth, rowHeight, cellIndex);
+      cellIndex += 1;
+    });
+
+    // 网格线
+    ctx.strokeStyle = '#e5e6eb';
     ctx.lineWidth = 1;
+    for (let r = 0; r <= rowCount; r += 1) {
+      const ly = gridBodyTop + rowHeight * r;
+      ctx.beginPath();
+      ctx.moveTo(margin, ly);
+      ctx.lineTo(margin + gridWidth, ly);
+      ctx.stroke();
+    }
+    for (let c = 0; c <= cols; c += 1) {
+      const lx = margin + colWidth * c;
+      ctx.beginPath();
+      ctx.moveTo(lx, gridBodyTop);
+      ctx.lineTo(lx, gridBodyTop + rowHeight * rowCount);
+      ctx.stroke();
+    }
 
-    ctx.fillStyle = '#f2f6ff';
-    ctx.fillRect(margin, tableTop, tableWidth, rowHeight);
-
-    ctx.strokeStyle = '#d6dbe0';
-    ctx.beginPath();
-    ctx.moveTo(margin, tableTop);
-    ctx.lineTo(margin + tableWidth, tableTop);
-    ctx.stroke();
-
-    let colX = margin;
-    ctx.fillStyle = '#1f2329';
-    ctx.font = 'bold 13px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('日期', colX + 10, tableTop + 11);
-    colX += dateColWidth;
-    shifts.forEach((shift) => {
-      ctx.fillStyle = shift.color || '#eaf6ff';
-      ctx.fillRect(colX + 1, tableTop + 1, shiftColWidth - 2, rowHeight - 2);
-      ctx.fillStyle = '#1f2329';
-      ctx.font = 'bold 13px sans-serif';
-      ctx.fillText(`${shift.name} ${shift.time || ''}`, colX + 8, tableTop + 6);
+    // 图例
+    const legendY = gridBodyTop + rowHeight * rowCount + 10;
+    if (legendY < height - 8) {
+      let legendX = margin;
       ctx.fillStyle = '#8a8f99';
       ctx.font = '11px sans-serif';
-      ctx.fillText(`需 ${shift.need || 0} 人`, colX + 8, tableTop + 22);
-      colX += shiftColWidth;
-    });
-
-    ctx.strokeStyle = '#d6dbe0';
-    ctx.beginPath();
-    ctx.moveTo(margin, tableTop + rowHeight);
-    ctx.lineTo(margin + tableWidth, tableTop + rowHeight);
-    ctx.stroke();
-
-    let rowY = tableTop + rowHeight;
-    rows.forEach((day, index) => {
-      const isAlt = index % 2 === 1;
-      ctx.fillStyle = isAlt ? '#fafbfc' : '#ffffff';
-      ctx.fillRect(margin, rowY, tableWidth, rowHeight);
-
-      let cellX = margin;
-      ctx.fillStyle = day.isWeekend ? '#c0392b' : '#1f2329';
-      ctx.font = 'bold 13px sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(`${day.day}日`, cellX + 10, rowY + 6);
-      ctx.fillStyle = '#8a8f99';
-      ctx.font = '11px sans-serif';
-      ctx.fillText(day.week || '', cellX + 10, rowY + 22);
-      cellX += dateColWidth;
-
+      ctx.fillText('图例：', legendX, legendY);
+      legendX += 42;
       shifts.forEach((shift) => {
-        const dayShifts = day.shifts || [];
-        const matched = dayShifts.find((item) => item.id === shift.id);
-        const ids = matched ? (matched.names || []) : [];
         ctx.fillStyle = shift.color || '#eaf6ff';
-        if (ids.length) {
-          ctx.globalAlpha = 0.35;
-          ctx.fillRect(cellX + 1, rowY + 1, shiftColWidth - 2, rowHeight - 2);
-          ctx.globalAlpha = 1;
-        }
-        ctx.fillStyle = '#343842';
-        ctx.font = '11px sans-serif';
-        const text = ids.length ? ids.map((id) => names[id] || id).join('、') : '—';
-        this.drawWrapText(ctx, text, cellX + 8, rowY + 8, shiftColWidth - 16, 13);
-        cellX += shiftColWidth;
+        ctx.beginPath();
+        ctx.arc(legendX + 5, legendY + 7, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#646a73';
+        ctx.fillText(shift.name, legendX + 16, legendY);
+        legendX += 16 + ctx.measureText(shift.name).width + 24;
       });
+    }
+  },
 
-      ctx.strokeStyle = '#e5e6eb';
-      ctx.beginPath();
-      ctx.moveTo(margin, rowY + rowHeight);
-      ctx.lineTo(margin + tableWidth, rowY + rowHeight);
-      ctx.stroke();
-      rowY += rowHeight;
-    });
+  drawCalendarCell(ctx, day, originX, originY, colWidth, rowHeight, cellIndex) {
+    const col = cellIndex % 7;
+    const row = Math.floor(cellIndex / 7);
+    const x = originX + colWidth * col;
+    const y = originY + rowHeight * row;
 
-    ctx.strokeStyle = '#d6dbe0';
-    colX = margin + dateColWidth;
-    shifts.forEach(() => {
-      ctx.beginPath();
-      ctx.moveTo(colX, tableTop);
-      ctx.lineTo(colX, rowY);
-      ctx.stroke();
-      colX += shiftColWidth;
-    });
-    ctx.beginPath();
-    ctx.moveTo(margin, tableTop);
-    ctx.lineTo(margin, rowY);
-    ctx.moveTo(margin + tableWidth, tableTop);
-    ctx.lineTo(margin + tableWidth, rowY);
-    ctx.stroke();
+    if (!day) return; // 空白前置格
 
-    ctx.fillStyle = '#8a8f99';
-    ctx.font = '11px sans-serif';
+    const pad = 8;
+    // 日期数字（右上）
+    ctx.textBaseline = 'top';
+    ctx.textAlign = 'right';
+    ctx.fillStyle = day.isWeekend ? '#e64340' : '#1f2329';
+    ctx.font = 'bold 15px sans-serif';
+    ctx.fillText(String(day.day), x + colWidth - pad, y + pad);
+
+    // 班次列表
     ctx.textAlign = 'left';
-    const legendY = rowY + 14;
-    let legendX = margin;
-    ctx.fillText('图例：', legendX, legendY);
-    legendX += 42;
+    const shifts = (day.shifts || []).filter((s) => s.names && s.names.length);
+    let itemY = y + pad + 22;
+    const maxBottom = y + rowHeight - pad;
+    const lineH = 14;
     shifts.forEach((shift) => {
+      if (itemY + lineH > maxBottom) return;
+      // 彩色圆点
       ctx.fillStyle = shift.color || '#eaf6ff';
-      ctx.fillRect(legendX, legendY + 2, 14, 12);
-      ctx.strokeStyle = '#d6dbe0';
-      ctx.strokeRect(legendX, legendY + 2, 14, 12);
-      ctx.fillStyle = '#646a73';
+      ctx.beginPath();
+      ctx.arc(x + pad + 4, itemY + 6, 4, 0, Math.PI * 2);
+      ctx.fill();
+      // 班次名（加粗）
+      const people = shift.names.join('、');
+      const textX = x + pad + 14;
+      const maxWidth = colWidth - pad * 2 - 14;
+      ctx.fillStyle = '#1f2329';
+      ctx.font = 'bold 11px sans-serif';
+      const nameText = `${shift.name} `;
+      ctx.fillText(nameText, textX, itemY);
+      // 人员（普通字重）
+      const nameW = ctx.measureText(nameText).width;
+      ctx.fillStyle = '#343842';
       ctx.font = '11px sans-serif';
-      ctx.fillText(shift.name, legendX + 20, legendY + 2);
-      legendX += 20 + ctx.measureText(shift.name).width + 24;
+      this.drawWrapText(ctx, people, textX + nameW, itemY, maxWidth - nameW, lineH);
+      itemY += lineH;
     });
   },
 
