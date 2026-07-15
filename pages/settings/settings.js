@@ -6,7 +6,9 @@ const {
   STORE_KEY,
   CURRENT_STORE_KEY,
   getStore,
-  setStore
+  setStore,
+  saveStore,
+  saveStores
 } = require('../../utils/store');
 const { isAdminSideRole, isSuperAdminRole, getVisibleStoresForRole, getScopedCurrentStoreId, syncTabBar } = require('../../utils/role');
 const { buildShiftTime, currentTime, sortShiftsByStartTime } = require('../../utils/shifts');
@@ -109,17 +111,26 @@ Page({
       checkinRadius: Number(checkinRadius) || 200,
       status: 'active'
     });
-    setStore(STORE_KEY, next);
-    this.setData({
-      storeForm: {
-        name: '',
-        address: '',
-        latitude: '',
-        longitude: '',
-        checkinRadius: ''
-      }
-    });
-    this.refresh();
+    wx.showLoading({ title: '保存中' });
+    saveStore(STORE_KEY, next)
+      .then(() => {
+        wx.hideLoading();
+        this.setData({
+          storeForm: {
+            name: '',
+            address: '',
+            latitude: '',
+            longitude: '',
+            checkinRadius: ''
+          }
+        });
+        wx.showToast({ title: '已保存', icon: 'success' });
+        this.refresh();
+      })
+      .catch(() => {
+        wx.hideLoading();
+        wx.showToast({ title: '保存到数据库失败', icon: 'none' });
+      });
   },
 
   useStore(event) {
@@ -143,11 +154,19 @@ Page({
       success: (res) => {
         if (!res.confirm) return;
         const stores = getStore(STORE_KEY, []).filter((item) => item.id !== id);
-        setStore(STORE_KEY, stores);
-        if (this.data.currentStoreId === id) {
-          setStore(CURRENT_STORE_KEY, stores[0].id);
-        }
-        this.refresh();
+        wx.showLoading({ title: '保存中' });
+        saveStore(STORE_KEY, stores)
+          .then(() => {
+            wx.hideLoading();
+            if (this.data.currentStoreId === id) {
+              setStore(CURRENT_STORE_KEY, stores[0].id);
+            }
+            this.refresh();
+          })
+          .catch(() => {
+            wx.hideLoading();
+            wx.showToast({ title: '保存到数据库失败', icon: 'none' });
+          });
       }
     });
   },
@@ -162,7 +181,9 @@ Page({
         need: Math.max(1, item.need + Number(delta))
       };
     }));
-    setStore(SHIFT_KEY, shifts);
+    saveStore(SHIFT_KEY, shifts).catch(() => {
+      wx.showToast({ title: '班次保存失败', icon: 'none' });
+    });
     this.setData({ shifts });
   },
 
@@ -181,7 +202,9 @@ Page({
         time: buildShiftTime(startTime, endTime)
       };
     }));
-    setStore(SHIFT_KEY, shifts);
+    saveStore(SHIFT_KEY, shifts).catch(() => {
+      wx.showToast({ title: '班次保存失败', icon: 'none' });
+    });
     this.setData({ shifts });
   },
 
@@ -213,12 +236,20 @@ Page({
       need: 1,
       color: '#eef6ff'
     }));
-    setStore(SHIFT_KEY, next);
-    this.setData({
-      shifts: next,
-      shiftForm: emptyShiftForm()
-    });
-    wx.showToast({ title: '已新增班次', icon: 'success' });
+    wx.showLoading({ title: '保存中' });
+    saveStore(SHIFT_KEY, next)
+      .then(() => {
+        wx.hideLoading();
+        this.setData({
+          shifts: next,
+          shiftForm: emptyShiftForm()
+        });
+        wx.showToast({ title: '已新增班次', icon: 'success' });
+      })
+      .catch(() => {
+        wx.hideLoading();
+        wx.showToast({ title: '保存到数据库失败', icon: 'none' });
+      });
   },
 
   deleteShift(event) {
@@ -242,9 +273,19 @@ Page({
           });
           schedule[storeId] = storeSchedule;
         });
-        setStore(SHIFT_KEY, shifts);
-        setStore(SCHEDULE_KEY, schedule);
-        this.refresh();
+        wx.showLoading({ title: '保存中' });
+        saveStores({
+          [SHIFT_KEY]: shifts,
+          [SCHEDULE_KEY]: schedule
+        })
+          .then(() => {
+            wx.hideLoading();
+            this.refresh();
+          })
+          .catch(() => {
+            wx.hideLoading();
+            wx.showToast({ title: '保存到数据库失败', icon: 'none' });
+          });
       }
     });
   }

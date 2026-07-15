@@ -1,6 +1,4 @@
 <view class="page schedule-page">
-  <view class="workbench-back-icon" bindtap="goWorkbench">‹</view>
-
   <view wx:if="{{canManage}}" class="page-tabs">
     <view class="page-tab {{activeTab === 'schedule' ? 'active' : ''}}" data-tab="schedule" bindtap="switchTab">班表</view>
     <view class="page-tab {{activeTab === 'records' ? 'active' : ''}}" data-tab="records" bindtap="switchTab">打卡记录</view>

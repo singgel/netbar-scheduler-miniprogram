@@ -6,7 +6,9 @@ const {
   STORE_KEY,
   CURRENT_STORE_KEY,
   getStore,
-  setStore
+  setStore,
+  saveStore,
+  saveStores
 } = require('../../utils/store');
 const {
   upsertStaffRoleRelation,
@@ -164,10 +166,6 @@ Page({
       this.setData({ activeStaffMenu: defaultMenu });
     }
     this.refresh();
-  },
-
-  goWorkbench() {
-    wx.switchTab({ url: '/pages/home/home' });
   },
 
   refresh() {
@@ -384,21 +382,33 @@ Page({
     const next = this.data.editingStaffId
       ? rawStaff.map((item) => (item.id === staffId ? { ...item, ...savedStaff } : item))
       : rawStaff.concat(savedStaff);
-    setStore(STAFF_KEY, next);
-    upsertStaffRoleRelation(staffId, phone.trim(), systemRole, {
+    wx.showLoading({ title: '保存中' });
+    const nextRelations = upsertStaffRoleRelation(staffId, phone.trim(), systemRole, {
       storeId: targetStoreId,
-      position
+      position,
+      persist: false
     });
-    this.setData({
-      activeDropdown: '',
-      activeStaffMenu: 'list',
-      editingStaffId: '',
-      staffSearchKeyword: '',
-      currentStoreId: targetStoreId,
-      form: emptyStaffForm()
-    });
-    wx.showToast({ title: '已保存', icon: 'success' });
-    this.refresh();
+    saveStores({
+      [STAFF_KEY]: next,
+      [STAFF_ROLE_RELATION_KEY]: nextRelations
+    })
+      .then(() => {
+        wx.hideLoading();
+        this.setData({
+          activeDropdown: '',
+          activeStaffMenu: 'list',
+          editingStaffId: '',
+          staffSearchKeyword: '',
+          currentStoreId: targetStoreId,
+          form: emptyStaffForm()
+        });
+        wx.showToast({ title: '已保存', icon: 'success' });
+        this.refresh();
+      })
+      .catch(() => {
+        wx.hideLoading();
+        wx.showToast({ title: '保存到数据库失败', icon: 'none' });
+      });
   },
 
   startEdit(event) {
@@ -440,10 +450,19 @@ Page({
       confirmColor: '#b42318',
       success: (res) => {
         if (!res.confirm) return;
-        setStore(STAFF_KEY, getStore(STAFF_KEY, []).map((item) => (
+        const next = getStore(STAFF_KEY, []).map((item) => (
           item.id === id ? { ...item, status: 'left' } : item
-        )));
-        this.refresh();
+        ));
+        wx.showLoading({ title: '保存中' });
+        saveStore(STAFF_KEY, next)
+          .then(() => {
+            wx.hideLoading();
+            this.refresh();
+          })
+          .catch(() => {
+            wx.hideLoading();
+            wx.showToast({ title: '保存到数据库失败', icon: 'none' });
+          });
       }
     });
   },
@@ -451,11 +470,20 @@ Page({
   restoreStaff(event) {
     if (!this.data.canManage) return;
     const id = event.currentTarget.dataset.id;
-    setStore(STAFF_KEY, getStore(STAFF_KEY, []).map((item) => (
+    const next = getStore(STAFF_KEY, []).map((item) => (
       item.id === id ? { ...item, status: 'active' } : item
-    )));
-    wx.showToast({ title: '已恢复在职', icon: 'success' });
-    this.refresh();
+    ));
+    wx.showLoading({ title: '保存中' });
+    saveStore(STAFF_KEY, next)
+      .then(() => {
+        wx.hideLoading();
+        wx.showToast({ title: '已恢复在职', icon: 'success' });
+        this.refresh();
+      })
+      .catch(() => {
+        wx.hideLoading();
+        wx.showToast({ title: '保存到数据库失败', icon: 'none' });
+      });
   },
 
   deleteStaff(event) {
@@ -472,10 +500,22 @@ Page({
       confirmColor: '#b42318',
       success: (res) => {
         if (!res.confirm) return;
-        setStore(STAFF_KEY, getStore(STAFF_KEY, []).filter((item) => item.id !== id));
-        setStore(STAFF_ROLE_RELATION_KEY, getStore(STAFF_ROLE_RELATION_KEY, []).filter((item) => item.staffId !== id));
-        wx.showToast({ title: '已删除', icon: 'success' });
-        this.refresh();
+        const nextStaff = getStore(STAFF_KEY, []).filter((item) => item.id !== id);
+        const nextRelations = getStore(STAFF_ROLE_RELATION_KEY, []).filter((item) => item.staffId !== id);
+        wx.showLoading({ title: '保存中' });
+        saveStores({
+          [STAFF_KEY]: nextStaff,
+          [STAFF_ROLE_RELATION_KEY]: nextRelations
+        })
+          .then(() => {
+            wx.hideLoading();
+            wx.showToast({ title: '已删除', icon: 'success' });
+            this.refresh();
+          })
+          .catch(() => {
+            wx.hideLoading();
+            wx.showToast({ title: '保存到数据库失败', icon: 'none' });
+          });
       }
     });
   }

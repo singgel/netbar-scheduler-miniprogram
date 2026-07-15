@@ -1,6 +1,4 @@
 <view class="page" bindtap="closeDropdowns">
-  <view class="workbench-back-icon" catchtap="goWorkbench">‹</view>
-
   <view wx:if="{{!canManage}}" class="panel guard-panel">
     <view class="section-title">员工端无需维护人员</view>
     <view class="muted">如需新增或删除员工，请切换到管理端。</view>

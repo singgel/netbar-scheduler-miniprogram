@@ -68,34 +68,68 @@ function pullSnapshot() {
   return request('/api/snapshot');
 }
 
-function persistResource(storageKey, value) {
+function persistResource(storageKey, value, options) {
   const resource = RESOURCE_BY_STORAGE_KEY[storageKey];
+  const requireBackend = options && options.requireBackend;
   if (!backendEnabled() || !resource) {
-    return;
+    return requireBackend
+      ? Promise.reject(new Error(!resource ? 'resource_not_persistable' : 'backend_not_configured'))
+      : Promise.resolve(null);
   }
 
   if (cloudEnabled()) {
-    callCloudFunction('saveCloudResource', {
+    return callCloudFunction('saveCloudResource', {
       resource,
       value
     }).catch(() => {
-      if (!API_BASE) return;
-      request(`/api/snapshot/${resource}`, {
+      if (!API_BASE) {
+        return requireBackend
+          ? Promise.reject(new Error('backend_not_configured'))
+          : null;
+      }
+      return request(`/api/snapshot/${resource}`, {
         method: 'PUT',
         data: {
           value
         }
-      }).catch(() => {});
+      });
     });
-    return;
   }
 
-  request(`/api/snapshot/${resource}`, {
+  return request(`/api/snapshot/${resource}`, {
     method: 'PUT',
     data: {
       value
     }
-  }).catch(() => {});
+  });
+}
+
+function persistSnapshot(storageValues, options) {
+  const requireBackend = options && options.requireBackend;
+  const snapshot = Object.keys(storageValues || {}).reduce((result, storageKey) => {
+    const resource = RESOURCE_BY_STORAGE_KEY[storageKey];
+    if (resource) {
+      result[resource] = storageValues[storageKey];
+    }
+    return result;
+  }, {});
+
+  if (!backendEnabled() || !Object.keys(snapshot).length) {
+    return requireBackend
+      ? Promise.reject(new Error(!Object.keys(snapshot).length ? 'snapshot_not_persistable' : 'backend_not_configured'))
+      : Promise.resolve(null);
+  }
+
+  if (cloudEnabled() && !API_BASE) {
+    return requireBackend
+      ? Promise.reject(new Error('backend_not_configured'))
+      : Promise.resolve(null);
+  }
+
+  return request('/api/snapshot', {
+    method: 'POST',
+    data: snapshot
+  });
 }
 
 function exchangePhoneCode(params) {
@@ -137,6 +171,7 @@ module.exports = {
   cloudEnabled,
   pullSnapshot,
   persistResource,
+  persistSnapshot,
   exchangePhoneCode,
   getCurrentUserRole
 };

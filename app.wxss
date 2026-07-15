@@ -112,19 +112,6 @@ page {
   color: #e64340;
 }
 
-.workbench-back-icon {
-  width: 56rpx;
-  height: 56rpx;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  margin: -4rpx 0 14rpx;
-  color: #1f2329;
-  font-size: 56rpx;
-  font-weight: 500;
-  line-height: 56rpx;
-}
-
 .icon-tile {
   width: 58rpx;
   height: 58rpx;

@@ -10,7 +10,8 @@ const {
   STORE_KEY,
   CURRENT_STORE_KEY,
   getStore,
-  setStore
+  setStore,
+  saveStore
 } = require('../../utils/store');
 const { getMonthDays, monthLabel, formatDate } = require('../../utils/date');
 const { generateMonthSchedule, staffNameMap } = require('../../utils/scheduler');
@@ -115,10 +116,6 @@ Page({
 
   onShow() {
     this.refresh();
-  },
-
-  goWorkbench() {
-    wx.switchTab({ url: '/pages/home/home' });
   },
 
   refresh() {
@@ -368,9 +365,17 @@ Page({
         ...monthSchedule
       }
     };
-    setStore(SCHEDULE_KEY, next);
-    wx.showToast({ title: '已生成安排', icon: 'success' });
-    this.refresh();
+    wx.showLoading({ title: '保存中' });
+    saveStore(SCHEDULE_KEY, next)
+      .then(() => {
+        wx.hideLoading();
+        wx.showToast({ title: '已生成安排', icon: 'success' });
+        this.refresh();
+      })
+      .catch(() => {
+        wx.hideLoading();
+        wx.showToast({ title: '保存到数据库失败', icon: 'none' });
+      });
   },
 
   clearMonth() {
@@ -386,8 +391,16 @@ Page({
         const storeSchedule = { ...(next[this.data.currentStoreId] || {}) };
         days.forEach((day) => delete storeSchedule[day.date]);
         next[this.data.currentStoreId] = storeSchedule;
-        setStore(SCHEDULE_KEY, next);
-        this.refresh();
+        wx.showLoading({ title: '保存中' });
+        saveStore(SCHEDULE_KEY, next)
+          .then(() => {
+            wx.hideLoading();
+            this.refresh();
+          })
+          .catch(() => {
+            wx.hideLoading();
+            wx.showToast({ title: '保存到数据库失败', icon: 'none' });
+          });
       }
     });
   },
@@ -444,9 +457,17 @@ Page({
     day[this.data.activeShift] = this.data.activeStaffIds;
     storeSchedule[this.data.activeDate] = day;
     schedule[this.data.currentStoreId] = storeSchedule;
-    setStore(SCHEDULE_KEY, schedule);
-    this.setData({ pickerVisible: false });
-    this.refresh();
+    wx.showLoading({ title: '保存中' });
+    saveStore(SCHEDULE_KEY, schedule)
+      .then(() => {
+        wx.hideLoading();
+        this.setData({ pickerVisible: false });
+        this.refresh();
+      })
+      .catch(() => {
+        wx.hideLoading();
+        wx.showToast({ title: '保存到数据库失败', icon: 'none' });
+      });
   },
 
   printSchedule() {

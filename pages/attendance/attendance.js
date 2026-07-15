@@ -9,7 +9,8 @@ const {
   CURRENT_STORE_KEY,
   SCHEDULE_KEY,
   getStore,
-  setStore
+  setStore,
+  saveStore
 } = require('../../utils/store');
 const { formatDate } = require('../../utils/date');
 const { matchNearestStore } = require('../../utils/location');
@@ -278,12 +279,14 @@ Page({
           clockIn: timeText(now),
           clockOut: ''
         });
-        setStore(ATTENDANCE_KEY, next);
-        wx.showToast({ title: `${matched.name}打卡成功`, icon: 'success' });
-        this.refresh();
+        return saveStore(ATTENDANCE_KEY, next)
+          .then(() => {
+            wx.showToast({ title: `${matched.name}打卡成功`, icon: 'success' });
+            this.refresh();
+          });
       })
       .catch((error) => {
-        wx.showToast({ title: error.message || '定位打卡失败', icon: 'none' });
+        wx.showToast({ title: error.message || '打卡保存失败', icon: 'none' });
       });
   },
 
@@ -313,12 +316,14 @@ Page({
           outDistance: matched.distance,
           clockOut: timeText(now)
         };
-        setStore(ATTENDANCE_KEY, records);
-        wx.showToast({ title: '下班成功', icon: 'success' });
-        this.refresh();
+        return saveStore(ATTENDANCE_KEY, records)
+          .then(() => {
+            wx.showToast({ title: '下班成功', icon: 'success' });
+            this.refresh();
+          });
       })
       .catch((error) => {
-        wx.showToast({ title: error.message || '定位打卡失败', icon: 'none' });
+        wx.showToast({ title: error.message || '打卡保存失败', icon: 'none' });
       });
   }
 });

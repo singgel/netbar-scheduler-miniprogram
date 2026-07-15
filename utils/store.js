@@ -1,4 +1,4 @@
-const { pullSnapshot, persistResource } = require('./backend');
+const { pullSnapshot, persistResource, persistSnapshot } = require('./backend');
 
 const STAFF_KEY = 'netbar_staff';
 const SHIFT_KEY = 'netbar_shifts';
@@ -63,7 +63,24 @@ function setLocalStore(key, value) {
 
 function setStore(key, value) {
   setLocalStore(key, value);
-  persistResource(key, value);
+  persistResource(key, value).catch(() => {});
+  return value;
+}
+
+function saveStore(key, value) {
+  return persistResource(key, value, { requireBackend: true }).then(() => {
+    setLocalStore(key, value);
+    return value;
+  });
+}
+
+function saveStores(valuesByKey) {
+  return persistSnapshot(valuesByKey, { requireBackend: true }).then(() => {
+    Object.keys(valuesByKey || {}).forEach((key) => {
+      setLocalStore(key, valuesByKey[key]);
+    });
+    return valuesByKey;
+  });
 }
 
 function normalizeStaff(staff, fallbackStoreId) {
@@ -224,6 +241,8 @@ module.exports = {
   defaultShifts,
   getStore,
   setStore,
+  saveStore,
+  saveStores,
   seedStore,
   syncStoreFromBackend
 };

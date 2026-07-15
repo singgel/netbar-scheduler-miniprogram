@@ -86,7 +86,7 @@ function resolveAccountByPhone(phone, preferredStaffId, fallbackRole) {
 }
 
 function upsertStaffRoleRelation(staffId, phone, role, meta) {
-  if (!staffId) return;
+  if (!staffId) return getStore(STAFF_ROLE_RELATION_KEY, []);
   const normalizedPhone = normalizePhone(phone);
   const relations = getStore(STAFF_ROLE_RELATION_KEY, []);
   const index = relations.findIndex((item) => item.staffId === staffId);
@@ -104,7 +104,10 @@ function upsertStaffRoleRelation(staffId, phone, role, meta) {
   const next = index >= 0
     ? relations.map((item, relationIndex) => (relationIndex === index ? nextRelation : item))
     : relations.concat(nextRelation);
-  setStore(STAFF_ROLE_RELATION_KEY, next);
+  if (!meta || meta.persist !== false) {
+    setStore(STAFF_ROLE_RELATION_KEY, next);
+  }
+  return next;
 }
 
 function applyResolvedRole(account) {
