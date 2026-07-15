@@ -1,12 +1,17 @@
 <view class="page">
   <view wx:if="{{!canManage}}" class="panel guard-panel">
     <view class="section-title">员工端无需配置规则</view>
-    <view class="muted">班次人数和数据维护由管理端处理。</view>
+    <view class="muted">班次人数和门店配置由管理端处理。</view>
     <navigator class="btn btn-primary guard-btn" url="/pages/home/home" open-type="switchTab"><text class="btn-icon">←</text>回到工作台</navigator>
   </view>
 
-  <view wx:if="{{canManage}}" class="section-label">门店</view>
-  <view wx:if="{{canManage}}" class="panel">
+  <view wx:if="{{canManage}}" class="settings-menu">
+    <view class="settings-menu-item {{activeSettingsTab === 'store' ? 'active' : ''}}" data-tab="store" bindtap="switchSettingsTab">门店管理</view>
+    <view class="settings-menu-item {{activeSettingsTab === 'shift' ? 'active' : ''}}" data-tab="shift" bindtap="switchSettingsTab">班次设置</view>
+  </view>
+
+  <view wx:if="{{canManage && activeSettingsTab === 'store'}}" class="section-label">门店</view>
+  <view wx:if="{{canManage && activeSettingsTab === 'store'}}" class="panel">
     <view class="section-title">门店管理</view>
     <view class="muted tip">{{isSuperAdmin ? '设置门店坐标和允许打卡半径，员工打卡时会自动匹配最近门店。' : '店长仅可查看自己门店信息。'}}</view>
 
@@ -20,7 +25,7 @@
       <input class="input" type="number" placeholder="打卡半径，默认 200 米" value="{{storeForm.checkinRadius}}" data-field="checkinRadius" bindinput="onStoreInput" />
       <view class="store-actions">
         <button class="btn btn-ghost" bindtap="chooseStoreLocation"><text class="btn-icon">◎</text>地图选点</button>
-        <button class="btn btn-primary" bindtap="addStore"><text class="btn-icon">+</text>新增门店</button>
+        <button class="btn btn-primary" bindtap="addStore"><text class="btn-icon">✓</text>保存</button>
       </view>
     </view>
 
@@ -33,14 +38,14 @@
         </view>
         <view wx:if="{{isSuperAdmin}}" class="store-card-actions">
           <button class="small-btn {{currentStoreId === item.id ? 'active-store' : ''}}" data-id="{{item.id}}" bindtap="useStore">{{currentStoreId === item.id ? '当前门店' : '设为当前'}}</button>
-          <button class="small-btn delete-store" data-id="{{item.id}}" bindtap="deleteStore">×</button>
+          <view class="delete-store" data-id="{{item.id}}" bindtap="deleteStore">×</view>
         </view>
       </view>
     </view>
   </view>
 
-  <view wx:if="{{canManage}}" class="section-label">规则</view>
-  <view wx:if="{{canManage}}" class="panel config-panel">
+  <view wx:if="{{canManage && activeSettingsTab === 'shift'}}" class="section-label">规则</view>
+  <view wx:if="{{canManage && activeSettingsTab === 'shift'}}" class="panel config-panel">
     <view class="section-title">班次设置</view>
     <view class="muted tip">{{isSuperAdmin ? '按开始时间排序；可新增班次，也可以调整起止时间和人数。' : '当前角色仅可查看班次配置。'}}</view>
 
@@ -57,34 +62,37 @@
       <button class="btn btn-primary shift-add-btn" bindtap="addShift"><text class="btn-icon">+</text>新增班次</button>
     </view>
 
+    <view class="shift-help">
+      <view class="help-main">右侧数字是该班次每天需要安排的人数</view>
+      <view class="help-sub">点击 - / + 调整人数，点击 × 删除该班次。</view>
+    </view>
+
     <view wx:for="{{shifts}}" wx:key="id" class="shift-config">
-      <view class="shift-main">
-        <view class="shift-name">{{item.name}}</view>
-        <view wx:if="{{isSuperAdmin}}" class="shift-time-edit">
-          <picker mode="time" value="{{item.startTime}}" data-id="{{item.id}}" data-field="startTime" bindchange="changeShiftTime">
-            <view class="time-pill">{{item.startTime}}</view>
-          </picker>
-          <view class="time-separator">-</view>
-          <picker mode="time" value="{{item.endTime}}" data-id="{{item.id}}" data-field="endTime" bindchange="changeShiftTime">
-            <view class="time-pill">{{item.endTime}}</view>
-          </picker>
+      <view class="shift-name">{{item.name}}</view>
+      <view class="shift-row-body">
+        <view class="shift-main">
+          <view wx:if="{{isSuperAdmin}}" class="shift-time-edit">
+            <picker mode="time" value="{{item.startTime}}" data-id="{{item.id}}" data-field="startTime" bindchange="changeShiftTime">
+              <view class="time-pill">开始 {{item.startTime}}</view>
+            </picker>
+            <view class="time-separator">至</view>
+            <picker mode="time" value="{{item.endTime}}" data-id="{{item.id}}" data-field="endTime" bindchange="changeShiftTime">
+              <view class="time-pill">结束 {{item.endTime}}</view>
+            </picker>
+          </view>
+          <view wx:else class="muted">{{item.time}}</view>
         </view>
-        <view wx:else class="muted">{{item.time}}</view>
+        <view class="shift-controls">
+          <view wx:if="{{isSuperAdmin}}" class="stepper">
+            <button class="step-btn" data-id="{{item.id}}" data-delta="-1" bindtap="changeNeed">−</button>
+            <view class="need">{{item.need}}</view>
+            <button class="step-btn" data-id="{{item.id}}" data-delta="1" bindtap="changeNeed">+</button>
+          </view>
+          <view wx:else class="readonly-need">{{item.need}} 人</view>
+          <view wx:if="{{isSuperAdmin}}" class="delete-shift-btn" data-id="{{item.id}}" bindtap="deleteShift">×</view>
+        </view>
       </view>
-      <view wx:if="{{isSuperAdmin}}" class="stepper">
-        <button class="step-btn" data-id="{{item.id}}" data-delta="-1" bindtap="changeNeed">−</button>
-        <view class="need">{{item.need}}</view>
-        <button class="step-btn" data-id="{{item.id}}" data-delta="1" bindtap="changeNeed">+</button>
-      </view>
-      <view wx:else class="readonly-need">{{item.need}} 人</view>
-      <button wx:if="{{isSuperAdmin}}" class="delete-shift-btn" data-id="{{item.id}}" bindtap="deleteShift">×</button>
     </view>
   </view>
-
-  <view wx:if="{{isSuperAdmin}}" class="section-label">维护</view>
-  <view wx:if="{{isSuperAdmin}}" class="panel danger-panel">
-    <view class="section-title">数据维护</view>
-    <button class="btn btn-ghost" bindtap="resetDemo"><text class="btn-icon">↻</text>恢复演示数据</button>
-    <button class="btn btn-danger danger-btn" bindtap="clearAll"><text class="btn-icon">×</text>清空全部班表</button>
-  </view>
 </view>
+<custom-tab-bar />

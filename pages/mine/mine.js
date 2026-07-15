@@ -12,13 +12,7 @@ const {
 } = require('../../utils/store');
 const { API_BASE } = require('../../utils/config');
 const { getMonthDays } = require('../../utils/date');
-const { syncRoleFromAuth, isSuperAdminRole, isManagerRole, syncTabBar } = require('../../utils/role');
-
-function staffStoreIds(staff) {
-  if (staff.storeIds && staff.storeIds.length) return staff.storeIds;
-  if (staff.storeId) return [staff.storeId];
-  return [];
-}
+const { syncRoleFromAuth, isSuperAdminRole, isManagerRole, getVisibleStoresForRole, syncTabBar } = require('../../utils/role');
 
 function roleText(role) {
   if (isSuperAdminRole(role)) return '超级管理员';
@@ -58,13 +52,11 @@ Page({
     const currentStaffId = auth.staffId || getStore(CURRENT_STAFF_KEY, '');
     const staff = staffList.find((item) => item.id === currentStaffId) || {};
     const phoneText = auth.phone || auth.manualPhone || staff.phone || '未填写手机号';
-    const storeIds = staffStoreIds(staff);
-    const storeCards = stores
-      .filter((store) => storeIds.indexOf(store.id) >= 0)
-      .map((store) => ({
-        ...store,
-        nameInitial: firstChar(store.name, '店')
-      }));
+    const visibleStores = currentStaffId ? getVisibleStoresForRole(role, stores, currentStaffId) : [];
+    const storeCards = visibleStores.map((store) => ({
+      ...store,
+      nameInitial: firstChar(store.name, '店')
+    }));
     const shiftMap = shifts.reduce((map, shift) => {
       map[shift.id] = shift;
       return map;

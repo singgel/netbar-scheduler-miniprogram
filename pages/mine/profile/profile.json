@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "个人信息"
+  "navigationBarTitleText": "个人信息",
+  "usingComponents": {
+    "custom-tab-bar": "/custom-tab-bar/index"
+  }
 }

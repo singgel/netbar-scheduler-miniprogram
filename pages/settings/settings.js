@@ -1,18 +1,10 @@
 const {
-  STAFF_KEY,
-  STAFF_ROLE_RELATION_KEY,
   SHIFT_KEY,
   SCHEDULE_KEY,
   ROLE_KEY,
   CURRENT_STAFF_KEY,
-  INVITE_CODE_KEY,
-  DEBUG_ROLE_SWITCH_KEY,
   STORE_KEY,
   CURRENT_STORE_KEY,
-  defaultStaff,
-  defaultStaffRoleRelations,
-  defaultStores,
-  defaultShifts,
   getStore,
   setStore
 } = require('../../utils/store');
@@ -32,7 +24,7 @@ Page({
     role: 'manager',
     canManage: true,
     isSuperAdmin: false,
-    debugRoleSwitch: true,
+    activeSettingsTab: 'store',
     shifts: [],
     stores: [],
     currentStoreId: '',
@@ -65,17 +57,16 @@ Page({
       role,
       canManage,
       isSuperAdmin,
-      debugRoleSwitch: getStore(DEBUG_ROLE_SWITCH_KEY, false),
       shifts: sortShiftsByStartTime(getStore(SHIFT_KEY, [])),
       stores: getVisibleStoresForRole(role, allStores, currentStaffId),
       currentStoreId
     }, () => syncTabBar(this));
   },
 
-  toggleDebugRoleSwitch() {
-    const next = !this.data.debugRoleSwitch;
-    setStore(DEBUG_ROLE_SWITCH_KEY, next);
-    this.setData({ debugRoleSwitch: next });
+  switchSettingsTab(event) {
+    const tab = event.currentTarget.dataset.tab;
+    if (!tab || tab === this.data.activeSettingsTab) return;
+    this.setData({ activeSettingsTab: tab });
   },
 
   onStoreInput(event) {
@@ -254,38 +245,6 @@ Page({
         setStore(SHIFT_KEY, shifts);
         setStore(SCHEDULE_KEY, schedule);
         this.refresh();
-      }
-    });
-  },
-
-  resetDemo() {
-    if (!this.data.isSuperAdmin) return;
-    wx.showModal({
-      title: '恢复演示数据',
-      content: '员工和班次会恢复默认值，现有班表会保留。',
-      success: (res) => {
-        if (!res.confirm) return;
-        setStore(STAFF_KEY, defaultStaff);
-        setStore(STAFF_ROLE_RELATION_KEY, defaultStaffRoleRelations);
-        setStore(SHIFT_KEY, defaultShifts);
-        setStore(STORE_KEY, defaultStores);
-        setStore(CURRENT_STORE_KEY, defaultStores[0].id);
-        setStore(INVITE_CODE_KEY, '');
-        this.refresh();
-      }
-    });
-  },
-
-  clearAll() {
-    if (!this.data.isSuperAdmin) return;
-    wx.showModal({
-      title: '清空全部班表',
-      content: '会删除所有月份的班表数据。',
-      confirmColor: '#b42318',
-      success: (res) => {
-        if (!res.confirm) return;
-        setStore(SCHEDULE_KEY, {});
-        wx.showToast({ title: '已清空', icon: 'success' });
       }
     });
   }

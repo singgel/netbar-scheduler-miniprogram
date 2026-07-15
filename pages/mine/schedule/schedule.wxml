@@ -9,16 +9,48 @@
       </picker>
       <view class="schedule-count">{{visibleSchedule.length}} 个班次</view>
     </view>
-    <view wx:for="{{visibleSchedule}}" wx:key="key" class="schedule-row {{item.isPast ? 'past' : ''}}">
-      <view class="date-chip">
-        <view class="date-day">{{item.day}}</view>
-        <view class="date-week">{{item.week}}</view>
-      </view>
-      <view class="schedule-main">
-        <view class="schedule-title">{{item.shiftName}}</view>
-        <view class="schedule-meta">{{item.storeName}} · {{item.time}}</view>
-      </view>
+
+    <view class="view-switch">
+      <view class="view-switch-item {{viewMode === 'list' ? 'active' : ''}}" data-mode="list" bindtap="switchViewMode">列表</view>
+      <view class="view-switch-item {{viewMode === 'calendar' ? 'active' : ''}}" data-mode="calendar" bindtap="switchViewMode">日历</view>
     </view>
-    <view wx:if="{{!visibleSchedule.length}}" class="empty-line">{{rangeLabel}}暂无排班</view>
+
+    <block wx:if="{{viewMode === 'list'}}">
+      <view wx:for="{{visibleSchedule}}" wx:key="key" class="schedule-row {{item.isPast ? 'past' : ''}}">
+        <view class="date-chip">
+          <view class="date-day">{{item.day}}</view>
+          <view class="date-week">{{item.week}}</view>
+        </view>
+        <view class="schedule-main">
+          <view class="schedule-title">{{item.shiftName}}</view>
+          <view class="schedule-meta">{{item.storeName}} · {{item.time}}</view>
+        </view>
+      </view>
+      <view wx:if="{{!visibleSchedule.length}}" class="empty-line">{{rangeLabel}}暂无排班</view>
+    </block>
+
+    <block wx:else>
+      <view class="calendar-board">
+        <view class="calendar-week-head">
+          <view wx:for="{{weekHeaders}}" wx:key="*this" class="calendar-week-label">{{item}}</view>
+        </view>
+        <view wx:for="{{calendarWeeks}}" wx:key="key" wx:for-item="week" class="calendar-week">
+          <view wx:for="{{week.days}}" wx:key="key" wx:for-item="day" class="calendar-day {{day.empty ? 'empty' : ''}} {{day.isToday ? 'today' : ''}} {{day.isPast ? 'past' : ''}}">
+            <view wx:if="{{!day.empty}}" class="calendar-day-head">
+              <view class="calendar-day-num">{{day.day}}</view>
+              <view wx:if="{{day.entries.length}}" class="calendar-day-count">{{day.entries.length}}</view>
+            </view>
+            <view wx:if="{{!day.empty}}" class="calendar-shifts">
+              <view wx:for="{{day.entries}}" wx:key="key" wx:for-item="shift" class="calendar-shift" style="border-left-color: {{shift.color}}">
+                <view class="calendar-shift-name">{{shift.shiftName}}</view>
+                <view class="calendar-shift-time">{{shift.time}}</view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view wx:if="{{!visibleSchedule.length}}" class="empty-line">{{rangeLabel}}暂无排班</view>
+    </block>
   </view>
 </view>
+<custom-tab-bar />

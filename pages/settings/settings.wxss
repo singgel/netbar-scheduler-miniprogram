@@ -11,14 +11,44 @@
   margin-top: 8rpx;
 }
 
-.shift-config {
-  min-height: 116rpx;
+.settings-menu {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: 1fr 1fr;
+  gap: 6rpx;
+  padding: 6rpx;
+  margin-bottom: 18rpx;
+  border-radius: 12rpx;
+  background: #edf0f5;
+  box-sizing: border-box;
+}
+
+.settings-menu-item {
+  min-height: 64rpx;
+  display: flex;
   align-items: center;
-  column-gap: 12rpx;
+  justify-content: center;
+  border-radius: 10rpx;
+  color: #646a73;
+  font-size: 25rpx;
+  font-weight: 700;
+  text-align: center;
+  line-height: 32rpx;
+  padding: 0 12rpx;
+  box-sizing: border-box;
+}
+
+.settings-menu-item.active {
+  background: #ffffff;
+  color: #07c160;
+  box-shadow: 0 6rpx 18rpx rgba(31, 35, 41, 0.08);
+}
+
+.shift-config {
+  min-height: 126rpx;
+  display: grid;
+  gap: 12rpx;
   border-top: 1rpx solid #edf0f5;
-  padding: 18rpx 0;
+  padding: 22rpx 0;
   box-sizing: border-box;
 }
 
@@ -65,6 +95,29 @@
   padding-right: 12rpx;
   margin: 0;
   box-sizing: border-box;
+}
+
+.shift-help {
+  display: grid;
+  gap: 4rpx;
+  margin: 16rpx 0 4rpx;
+  padding: 16rpx 18rpx;
+  border-radius: 12rpx;
+  background: #f7f8fa;
+  box-sizing: border-box;
+}
+
+.help-main {
+  color: #1f2329;
+  font-size: 25rpx;
+  font-weight: 700;
+  line-height: 34rpx;
+}
+
+.help-sub {
+  color: #8a8f99;
+  font-size: 23rpx;
+  line-height: 32rpx;
 }
 
 .store-form {
@@ -134,9 +187,9 @@
 
 .store-card-actions {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 56rpx;
+  grid-template-columns: minmax(0, 1fr) 64rpx;
   align-items: center;
-  gap: 12rpx;
+  gap: 16rpx;
 }
 
 .small-btn {
@@ -164,16 +217,19 @@
 }
 
 .delete-store {
-  width: 56rpx;
-  height: 56rpx;
-  min-width: 56rpx;
+  width: 64rpx;
+  height: 64rpx;
+  min-width: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 50%;
   background: #fff2f0;
   color: #e64340;
-  font-size: 28rpx;
+  font-size: 32rpx;
   font-weight: 800;
-  line-height: 56rpx;
-  padding: 0;
+  line-height: 64rpx;
+  box-sizing: border-box;
 }
 
 .shift-name {
@@ -184,42 +240,60 @@
   white-space: nowrap;
 }
 
+.shift-row-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 190rpx;
+  align-items: center;
+  column-gap: 18rpx;
+}
+
 .shift-main {
   min-width: 0;
   flex: 1;
 }
 
 .shift-time-edit {
-  display: flex;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(122rpx, 1fr) 28rpx minmax(122rpx, 1fr);
   align-items: center;
-  gap: 8rpx;
-  margin-top: 8rpx;
-  flex-wrap: wrap;
+  gap: 10rpx;
 }
 
 .time-pill {
-  height: 42rpx;
-  min-width: 84rpx;
+  width: 100%;
+  height: 54rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999rpx;
+  border-radius: 10rpx;
   background: #f2f7ff;
   color: #1677ff;
-  font-size: 22rpx;
+  font-size: 24rpx;
   font-weight: 700;
-  padding: 0 12rpx;
+  padding: 0 8rpx;
   box-sizing: border-box;
+  white-space: nowrap;
 }
 
 .time-separator {
   color: #8a8f99;
   font-size: 22rpx;
-  line-height: 42rpx;
+  line-height: 54rpx;
+  text-align: center;
+}
+
+.shift-controls {
+  width: 190rpx;
+  display: grid;
+  grid-template-columns: 134rpx 44rpx;
+  align-items: center;
+  gap: 12rpx;
 }
 
 .stepper {
-  width: 188rpx;
+  width: 134rpx;
+  height: 54rpx;
   display: flex;
   align-items: center;
   border: 1rpx solid #e5e6eb;
@@ -229,14 +303,14 @@
 }
 
 .step-btn {
-  width: 56rpx;
-  height: 56rpx;
+  width: 40rpx;
+  height: 54rpx;
   border-radius: 0;
   background: transparent;
   color: #07c160;
   font-size: 32rpx;
   font-weight: 700;
-  line-height: 56rpx;
+  line-height: 54rpx;
   padding: 0;
   margin: 0;
 }
@@ -246,11 +320,11 @@
 }
 
 .need {
-  width: 76rpx;
+  width: 54rpx;
   text-align: center;
   color: #1f2329;
   font-weight: 700;
-  line-height: 56rpx;
+  line-height: 54rpx;
 }
 
 .readonly-need {
@@ -281,20 +355,5 @@
   line-height: 44rpx;
   padding: 0;
   margin: 0;
-  box-shadow: none;
-}
-
-.delete-shift-btn::after {
-  border: 0;
-}
-
-.danger-panel {
-  margin-top: 20rpx;
-  display: grid;
-  gap: 16rpx;
-}
-
-.danger-btn {
-  background: #fff2f0;
-  color: #e64340;
+  box-sizing: border-box;
 }

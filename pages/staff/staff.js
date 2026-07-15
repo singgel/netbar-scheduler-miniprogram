@@ -166,6 +166,10 @@ Page({
     this.refresh();
   },
 
+  goWorkbench() {
+    wx.switchTab({ url: '/pages/home/home' });
+  },
+
   refresh() {
     const role = getStore(ROLE_KEY, 'manager');
     const canManage = isAdminSideRole(role);
@@ -332,6 +336,11 @@ Page({
   saveStaff() {
     if (!this.data.canManage) return;
     const { name, gender, age, idCard, role, position: formPosition, phone, hireDate, maxPerWeek } = this.data.form;
+    const targetStoreId = this.data.currentStoreId || (this.data.stores[0] && this.data.stores[0].id) || '';
+    if (!targetStoreId) {
+      wx.showToast({ title: '请先配置门店', icon: 'none' });
+      return;
+    }
     if (!name.trim()) {
       wx.showToast({ title: '请输入姓名', icon: 'none' });
       return;
@@ -357,7 +366,7 @@ Page({
       role: roleText,
       position,
       phone: phone.trim(),
-      storeIds: [this.data.currentStoreId],
+      storeIds: [targetStoreId],
       maxPerWeek: Number(maxPerWeek) || 6,
       status: this.data.editingStaffId ? (existingStaff.status || 'active') : 'active',
       hireDate: hireDate.trim() || todayDate(),
@@ -377,12 +386,15 @@ Page({
       : rawStaff.concat(savedStaff);
     setStore(STAFF_KEY, next);
     upsertStaffRoleRelation(staffId, phone.trim(), systemRole, {
-      storeId: this.data.currentStoreId,
+      storeId: targetStoreId,
       position
     });
     this.setData({
       activeDropdown: '',
+      activeStaffMenu: 'list',
       editingStaffId: '',
+      staffSearchKeyword: '',
+      currentStoreId: targetStoreId,
       form: emptyStaffForm()
     });
     wx.showToast({ title: '已保存', icon: 'success' });

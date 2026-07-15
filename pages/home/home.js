@@ -1,5 +1,8 @@
 const {
   STAFF_KEY,
+  SCHEDULE_KEY,
+  ATTENDANCE_KEY,
+  STAFF_ROLE_RELATION_KEY,
   ROLE_KEY,
   CURRENT_STAFF_KEY,
   EMPLOYEE_AUTH_KEY,
@@ -48,7 +51,9 @@ Page({
     profileReady: false,
     debugRoleSwitch: true,
     canUseEmployeeFeatures: false,
-    loginMode: 'code',
+    enableCodeLogin: false,
+    enableWechatPhoneLogin: false,
+    loginMode: 'password',
     loginForm: {
       phone: '',
       credential: ''
@@ -213,7 +218,7 @@ Page({
       return;
     }
     if (credential !== '123456') {
-      wx.showToast({ title: this.data.loginMode === 'code' ? '验证码错误，体验码为123456' : '密码错误，体验密码为123456', icon: 'none' });
+      wx.showToast({ title: this.data.loginMode === 'code' ? '验证码错误' : '密码错误', icon: 'none' });
       return;
     }
     this.resolveAndLoginByPhone(phone);
@@ -316,31 +321,46 @@ Page({
     this.resolveAndLoginByPhone('15922251233', { nickname: '李安安' });
   },
 
-  clearEmployeeBind() {
+  clearCurrentStoreData() {
+    if (!this.data.isSuperAdmin) return;
+    const storeId = this.data.currentStoreId;
+    const storeName = this.data.currentStoreName || '当前门店';
+    if (!storeId) {
+      wx.showToast({ title: '未选择门店', icon: 'none' });
+      return;
+    }
+    const selfStaffId = this.data.currentStaffId;
     wx.showModal({
-      title: '清除员工绑定',
-      content: '会清除本机员工身份和入职码，便于重新测试扫码入职流程。',
+      title: '清除门店数据',
+      content: `将清除「${storeName}」的：本门店其他员工信息（不含自己）、打卡记录、班表安排。此操作不可恢复，是否继续？`,
       confirmColor: '#b42318',
+      confirmText: '清除',
       success: (res) => {
         if (!res.confirm) return;
-        setStore(EMPLOYEE_AUTH_KEY, {
-          nickname: '',
-          avatarUrl: '',
-          phone: '',
-          phoneCode: '',
-          manualPhone: '',
-          loginCode: '',
-          inviteCode: '',
-          staffId: '',
-          bound: false
+        // 1. 员工：保留自己，删除该门店的其他员工（不含自己）
+        const staff = getStore(STAFF_KEY, []);
+        const nextStaff = staff.filter((item) => {
+          if (item.id === selfStaffId) return true;
+          const ids = (item.storeIds && item.storeIds.length) ? item.storeIds : (item.storeId ? [item.storeId] : []);
+          return ids.indexOf(storeId) < 0;
         });
-        setStore(INVITE_CODE_KEY, '');
-        setStore(ROLE_KEY, 'employee');
-        wx.showToast({ title: '已清除', icon: 'success' });
-        this.setData({
-          autoLoginChecked: true,
-          autoLoggingIn: false
-        }, () => this.refresh());
+        const removedStaffIds = staff.filter((item) => nextStaff.indexOf(item) < 0).map((item) => item.id);
+        setStore(STAFF_KEY, nextStaff);
+        // 2. 仅删除被移除员工的角色关系（不按门店删，避免误删超管/店长的关系）
+        const relations = getStore(STAFF_ROLE_RELATION_KEY, []);
+        const nextRelations = relations.filter((item) => removedStaffIds.indexOf(item.staffId) < 0);
+        setStore(STAFF_ROLE_RELATION_KEY, nextRelations);
+        // 3. 打卡记录：删除该门店的记录
+        const attendance = getStore(ATTENDANCE_KEY, []);
+        const nextAttendance = attendance.filter((item) => item.storeId !== storeId);
+        setStore(ATTENDANCE_KEY, nextAttendance);
+        // 4. 班表：删除该门店的排班
+        const schedule = getStore(SCHEDULE_KEY, {});
+        const nextSchedule = { ...schedule };
+        delete nextSchedule[storeId];
+        setStore(SCHEDULE_KEY, nextSchedule);
+        wx.showToast({ title: '已清除门店数据', icon: 'success' });
+        this.refresh();
       }
     });
   },

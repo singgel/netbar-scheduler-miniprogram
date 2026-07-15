@@ -69,15 +69,19 @@ function resolveAccountByPhone(phone, preferredStaffId, fallbackRole) {
     ? staff.find((item) => normalizePhone(item.phone) === normalizedPhone && item.status !== 'left')
     : null;
   const staffId = (phoneRelation && phoneRelation.staffId) || (phoneStaff && phoneStaff.id) || preferredStaffId || '';
+  const relationRole = getRelationRole(staffId, normalizedPhone, relations);
+  // 关系表查不到时，回退到员工记录自身的 role 字段，避免清除操作误删关系后无法恢复角色
+  const staffRecord = staff.find((item) => item.id === staffId) || null;
+  const fallbackStaffRole = staffRecord && staffRecord.role ? normalizeRole(staffRecord.role) : 'employee';
   const role = fallbackRole
     ? normalizeRole(fallbackRole)
-    : getRelationRole(staffId, normalizedPhone, relations);
+    : (relationRole === 'employee' && fallbackStaffRole !== 'employee' ? fallbackStaffRole : relationRole);
 
   return {
     role,
     staffId,
     phone: normalizedPhone,
-    staff: staff.find((item) => item.id === staffId) || null
+    staff: staffRecord
   };
 }
 

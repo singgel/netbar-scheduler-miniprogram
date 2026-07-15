@@ -12,3 +12,4 @@
     <view wx:if="{{!storeCards.length}}" class="empty-line">暂无门店信息</view>
   </view>
 </view>
+<custom-tab-bar />

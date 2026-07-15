@@ -1,16 +1,10 @@
 const {
-  STAFF_KEY,
   CURRENT_STAFF_KEY,
   EMPLOYEE_AUTH_KEY,
   STORE_KEY,
   getStore
 } = require('../../../utils/store');
-
-function staffStoreIds(staff) {
-  if (staff.storeIds && staff.storeIds.length) return staff.storeIds;
-  if (staff.storeId) return [staff.storeId];
-  return [];
-}
+const { syncRoleFromAuth, getVisibleStoresForRole } = require('../../../utils/role');
 
 function firstChar(value, fallback) {
   const text = String(value || '').trim();
@@ -23,19 +17,16 @@ Page({
   },
 
   onShow() {
-    const staffList = getStore(STAFF_KEY, []);
     const stores = getStore(STORE_KEY, []);
     const auth = getStore(EMPLOYEE_AUTH_KEY, {});
+    const role = syncRoleFromAuth(auth);
     const currentStaffId = auth.staffId || getStore(CURRENT_STAFF_KEY, '');
-    const staff = staffList.find((item) => item.id === currentStaffId) || {};
-    const storeIds = staffStoreIds(staff);
+    const visibleStores = currentStaffId ? getVisibleStoresForRole(role, stores, currentStaffId) : [];
     this.setData({
-      storeCards: stores
-        .filter((store) => storeIds.indexOf(store.id) >= 0)
-        .map((store) => ({
-          ...store,
-          nameInitial: firstChar(store.name, '店')
-        }))
+      storeCards: visibleStores.map((store) => ({
+        ...store,
+        nameInitial: firstChar(store.name, '店')
+      }))
     });
   }
 });

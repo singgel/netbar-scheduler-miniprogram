@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "所在门店"
+  "navigationBarTitleText": "所在门店",
+  "usingComponents": {
+    "custom-tab-bar": "/custom-tab-bar/index"
+  }
 }

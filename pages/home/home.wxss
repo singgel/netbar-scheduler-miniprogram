@@ -194,12 +194,6 @@
   color: #1f2329;
 }
 
-.login-tip {
-  color: #8a8f99;
-  font-size: 24rpx;
-  line-height: 34rpx;
-}
-
 .auth-mask {
   position: fixed;
   left: 0;
@@ -598,12 +592,12 @@
   background: rgba(255, 159, 24, 0.8);
 }
 
-.icon-test {
-  background: rgba(240, 82, 82, 0.8);
-}
-
 .icon-settings {
   background: rgba(111, 85, 245, 0.8);
+}
+
+.icon-test {
+  background: rgba(240, 82, 82, 0.8);
 }
 
 .icon-attendance {

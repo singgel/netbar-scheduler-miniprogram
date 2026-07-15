@@ -9,21 +9,18 @@
     <view class="section-title">今日打卡</view>
     <view class="muted today">{{today}}</view>
 
-    <view wx:if="{{role === 'employee'}}" class="identity-card">
+    <view class="identity-card">
       <image wx:if="{{employeeAuth.avatarUrl}}" class="identity-avatar" src="{{employeeAuth.avatarUrl}}" mode="aspectFill" />
       <view>
-        <view class="muted">员工端</view>
-        <view class="identity-name">{{employeeAuth.nickname || currentStaffName || '未选择员工'}}</view>
+        <view class="muted">{{canManage ? '管理端代打卡' : '员工端'}}</view>
+        <view class="identity-name">{{employeeAuth.nickname || selectedStaffName || currentStaffName || '未选择员工'}}</view>
       </view>
     </view>
 
-    <picker wx:if="{{canManage}}" mode="selector" range="{{staff}}" range-key="name" bindchange="selectStaff">
-      <view class="select-box">{{selectedStaffName || '选择员工'}}</view>
-    </picker>
-
     <picker mode="selector" range="{{shifts}}" range-key="name" bindchange="selectShift">
-      <view class="select-box">{{selectedShiftName || '选择班次'}}</view>
+      <view class="select-box">{{selectedShiftName || (autoShiftHint || '选择班次')}}</view>
     </picker>
+    <view class="muted shift-tip">根据当前时间已识别班次，可手动切换。</view>
 
     <view class="actions">
       <button class="btn btn-primary" loading="{{locating}}" bindtap="clockIn"><text class="btn-icon">↑</text>上班打卡</button>
@@ -48,3 +45,4 @@
     </view>
   </view>
 </view>
+<custom-tab-bar />

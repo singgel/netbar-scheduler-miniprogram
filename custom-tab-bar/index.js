@@ -14,6 +14,12 @@ const employeeItems = [
   { pagePath: 'pages/mine/mine', text: '我的', icon: '我' }
 ];
 
+function resolveSelected(route, items) {
+  if (items.some((item) => item.pagePath === route)) return route;
+  if (route && route.indexOf('pages/mine/') === 0) return 'pages/mine/mine';
+  return 'pages/home/home';
+}
+
 Component({
   data: {
     hidden: false,
@@ -33,17 +39,20 @@ Component({
       const auth = getStore(EMPLOYEE_AUTH_KEY, {});
       const pages = getCurrentPages();
       const currentPage = pages[pages.length - 1] || {};
-      const selected = route || currentPage.route || 'pages/home/home';
+      const currentRoute = route || currentPage.route || 'pages/home/home';
+      const items = isAdminSideRole(role) ? adminItems : employeeItems;
       this.setData({
-        hidden: selected === 'pages/home/home' && !(auth && auth.bound && auth.staffId),
-        selected,
-        items: isAdminSideRole(role) ? adminItems : employeeItems
+        hidden: currentRoute === 'pages/home/home' && !(auth && auth.bound && auth.staffId),
+        selected: resolveSelected(currentRoute, items),
+        items
       });
     },
 
     switchTab(event) {
       const path = event.currentTarget.dataset.path;
-      if (!path || path === this.data.selected) return;
+      const pages = getCurrentPages();
+      const currentPage = pages[pages.length - 1] || {};
+      if (!path || path === currentPage.route) return;
       wx.switchTab({ url: `/${path}` });
     }
   }

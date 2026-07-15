@@ -15,6 +15,8 @@ const rangeOptions = [
   { label: '本月排班', value: 'month' }
 ];
 
+const weekHeaders = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+
 function weekRange(today) {
   const day = today.getDay();
   const mondayOffset = day === 0 ? -6 : 1 - day;
@@ -26,6 +28,16 @@ function weekRange(today) {
     start: formatDate(start),
     end: formatDate(end)
   };
+}
+
+function addDays(date, offset) {
+  const next = new Date(date);
+  next.setDate(date.getDate() + offset);
+  return next;
+}
+
+function mondayFirstIndex(date) {
+  return (date.getDay() + 6) % 7;
 }
 
 function filterSchedule(schedule, range, now) {
@@ -40,14 +52,76 @@ function filterSchedule(schedule, range, now) {
   return schedule;
 }
 
+function buildCalendarDays(range, now) {
+  if (range === 'week' || range === 'today') {
+    const dates = weekRange(now);
+    const start = new Date(`${dates.start}T00:00:00`);
+    const days = [];
+    for (let i = 0; i < 7; i += 1) {
+      const date = addDays(start, i);
+      days.push({
+        date: formatDate(date),
+        day: date.getDate(),
+        week: weekHeaders[mondayFirstIndex(date)],
+        isWeekend: date.getDay() === 0 || date.getDay() === 6
+      });
+    }
+    return days;
+  }
+  return getMonthDays(now.getFullYear(), now.getMonth() + 1);
+}
+
+function buildCalendarWeeks(schedule, range, now) {
+  const todayStr = formatDate(now);
+  const entriesByDate = schedule.reduce((map, item) => {
+    if (!map[item.date]) map[item.date] = [];
+    map[item.date].push(item);
+    return map;
+  }, {});
+  const days = buildCalendarDays(range, now);
+  const cells = days.map((day) => ({
+    ...day,
+    empty: false,
+    isToday: day.date === todayStr,
+    isPast: day.date < todayStr,
+    entries: entriesByDate[day.date] || []
+  }));
+
+  if (range === 'month' && cells.length) {
+    const leading = mondayFirstIndex(new Date(`${cells[0].date}T00:00:00`));
+    const trailing = (7 - ((leading + cells.length) % 7)) % 7;
+    for (let i = 0; i < leading; i += 1) {
+      cells.unshift({ key: `leading_${i}`, empty: true, entries: [] });
+    }
+    for (let i = 0; i < trailing; i += 1) {
+      cells.push({ key: `trailing_${i}`, empty: true, entries: [] });
+    }
+  }
+
+  const weeks = [];
+  for (let i = 0; i < cells.length; i += 7) {
+    weeks.push({
+      key: `week_${i}`,
+      days: cells.slice(i, i + 7).map((cell, index) => ({
+        key: cell.date || `${cell.key}_${index}`,
+        ...cell
+      }))
+    });
+  }
+  return weeks;
+}
+
 Page({
   data: {
     rangeOptions,
+    weekHeaders,
     rangeIndex: 2,
     rangeValue: 'month',
     rangeLabel: '本月排班',
+    viewMode: 'list',
     allSchedule: [],
-    visibleSchedule: []
+    visibleSchedule: [],
+    calendarWeeks: []
   },
 
   onShow() {
@@ -95,17 +169,23 @@ Page({
             date,
             shiftName: shift.name || '班次',
             time: shift.time || '',
+            color: shift.color || '#e8f8ef',
             storeName: store.name || '未知门店',
             isPast: date < todayStr
           });
         });
       });
     });
-    monthSchedule.sort((a, b) => a.date.localeCompare(b.date));
+    monthSchedule.sort((a, b) => {
+      const dateOrder = a.date.localeCompare(b.date);
+      if (dateOrder) return dateOrder;
+      return String(a.time || '').localeCompare(String(b.time || ''));
+    });
     const visibleSchedule = filterSchedule(monthSchedule, this.data.rangeValue, now);
     this.setData({
       allSchedule: monthSchedule,
-      visibleSchedule
+      visibleSchedule,
+      calendarWeeks: buildCalendarWeeks(visibleSchedule, this.data.rangeValue, now)
     });
   },
 
@@ -118,7 +198,14 @@ Page({
       rangeIndex,
       rangeValue: option.value,
       rangeLabel: option.label,
-      visibleSchedule
+      visibleSchedule,
+      calendarWeeks: buildCalendarWeeks(visibleSchedule, option.value, new Date())
     });
+  },
+
+  switchViewMode(event) {
+    const mode = event.currentTarget.dataset.mode;
+    if (!mode || mode === this.data.viewMode) return;
+    this.setData({ viewMode: mode });
   }
 });

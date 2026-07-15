@@ -3,6 +3,7 @@ const {
   STAFF_ROLE_RELATION_KEY,
   SHIFT_KEY,
   SCHEDULE_KEY,
+  ATTENDANCE_KEY,
   ROLE_KEY,
   CURRENT_STAFF_KEY,
   EMPLOYEE_AUTH_KEY,
@@ -11,7 +12,7 @@ const {
   getStore,
   setStore
 } = require('../../utils/store');
-const { getMonthDays, monthLabel } = require('../../utils/date');
+const { getMonthDays, monthLabel, formatDate } = require('../../utils/date');
 const { generateMonthSchedule, staffNameMap } = require('../../utils/scheduler');
 const { isAdminSideRole, getVisibleStoresForRole, getScopedCurrentStoreId, normalizeRole, syncTabBar } = require('../../utils/role');
 const { sortShiftsByStartTime } = require('../../utils/shifts');
@@ -27,6 +28,45 @@ function isSchedulableStaff(staff, relationMap) {
   return normalizeRole(relation.role || staff.role) !== 'super_admin';
 }
 
+function addDays(date, offset) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + offset);
+  return next;
+}
+
+function startOfWeek(date) {
+  const next = new Date(date);
+  const day = next.getDay(); // 0=周日
+  const diff = day === 0 ? -6 : 1 - day; // 周一为一周起点
+  return addDays(next, diff);
+}
+
+function endOfWeek(date) {
+  return addDays(startOfWeek(date), 6);
+}
+
+function startOfMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function endOfMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0);
+}
+
+// 计算某周期窗口的起止日期（含）
+function periodRange(date, period) {
+  const base = date instanceof Date ? date : new Date(date);
+  if (period === 'day') return { start: base, end: base };
+  if (period === 'week') return { start: startOfWeek(base), end: endOfWeek(base) };
+  return { start: startOfMonth(base), end: endOfMonth(base) };
+}
+
+function rangeLabel(start, end, period) {
+  if (period === 'day') return formatDate(start);
+  if (period === 'week') return `${formatDate(start)} ~ ${formatDate(end)}`;
+  return monthLabel(start.getFullYear(), start.getMonth() + 1);
+}
+
 Page({
   data: {
     year: 2026,
@@ -39,6 +79,7 @@ Page({
     rows: [],
     role: 'manager',
     canManage: true,
+    canAutoSchedule: true,
     stores: [],
     currentStoreId: '',
     currentStoreName: '',
@@ -54,16 +95,30 @@ Page({
     staffOptions: [],
     printVisible: false,
     printTempPath: '',
-    printSaving: false
+    printSaving: false,
+    activeTab: 'schedule',
+    recordPeriod: 'day',
+    recordDate: '',
+    recordRangeText: '',
+    recordList: [],
+    recordEmptyText: ''
   },
 
   onLoad() {
     const now = new Date();
-    this.setData({ year: now.getFullYear(), month: now.getMonth() + 1 });
+    this.setData({
+      year: now.getFullYear(),
+      month: now.getMonth() + 1,
+      recordDate: formatDate(now)
+    });
   },
 
   onShow() {
     this.refresh();
+  },
+
+  goWorkbench() {
+    wx.switchTab({ url: '/pages/home/home' });
   },
 
   refresh() {
@@ -100,6 +155,24 @@ Page({
       map[item.id] = true;
       return map;
     }, {});
+    // 打卡索引：${date}|${shiftId}|${staffId} -> 是否有上班打卡
+    const attendance = getStore(ATTENDANCE_KEY, []);
+    const clockedIn = {};
+    attendance.forEach((item) => {
+      if (item && item.clockIn && item.date && item.shiftId && item.staffId) {
+        clockedIn[`${item.date}|${item.shiftId}|${item.staffId}`] = true;
+      }
+    });
+    const today = formatDate(new Date());
+    // 将排班员工 id 列表映射为带打卡状态的 nameItems；仅过去日期显示状态
+    const buildNameItems = (ids, date, shiftId) => ids.map((id) => {
+      const isPast = date < today;
+      let status = '';
+      if (isPast) {
+        status = clockedIn[`${date}|${shiftId}|${id}`] ? 'checkedIn' : 'absent';
+      }
+      return { id, name: names[id] || '未知员工', status };
+    });
     const rows = days.map((day) => {
       let visibleShifts = [];
       if (canManage) {
@@ -109,6 +182,7 @@ Page({
           return {
             ...shift,
             names: ids.map((id) => names[id] || '未知员工'),
+            nameItems: buildNameItems(ids, day.date, shift.id),
             isMine: ids.indexOf(currentStaffId) >= 0
           };
         });
@@ -122,6 +196,7 @@ Page({
               ...shift,
               name: `${store.name} · ${shift.name}`,
               names: ids.map((id) => names[id] || '未知员工'),
+              nameItems: buildNameItems(ids, day.date, shift.id),
               isMine: ids.indexOf(currentStaffId) >= 0
             });
           });
@@ -140,6 +215,10 @@ Page({
     wx.setNavigationBarTitle({
       title: currentStore.name || '班表'
     });
+    // 仅本月及以后的月份允许生成班表；过去月份只读展示
+    const nowDate = new Date();
+    const canAutoSchedule = this.data.year > nowDate.getFullYear()
+      || (this.data.year === nowDate.getFullYear() && this.data.month >= nowDate.getMonth() + 1);
     this.setData({
       staff,
       storeStaff,
@@ -149,14 +228,97 @@ Page({
       currentStoreName: currentStore.name || '',
       role,
       canManage,
+      canAutoSchedule,
       currentStaffId,
       currentStaffName: currentStaff.name || '',
       employeeReady,
       schedule,
       rows,
       monthText: monthLabel(this.data.year, this.data.month),
-      monthShortText: `${this.data.month}月`
-    }, () => syncTabBar(this));
+      monthShortText: monthLabel(this.data.year, this.data.month)
+    }, () => {
+      syncTabBar(this);
+      if (this.data.activeTab === 'records') {
+        this.refreshRecords();
+      }
+    });
+  },
+
+  switchTab(event) {
+    const tab = event.currentTarget.dataset.tab;
+    if (!tab || tab === this.data.activeTab) return;
+    this.setData({ activeTab: tab }, () => {
+      if (tab === 'records') this.refreshRecords();
+    });
+  },
+
+  switchRecordPeriod(event) {
+    const period = event.currentTarget.dataset.period;
+    if (!period || period === this.data.recordPeriod) return;
+    this.setData({ recordPeriod: period }, () => this.refreshRecords());
+  },
+
+  prevRecordRange() {
+    const period = this.data.recordPeriod;
+    const base = new Date(this.data.recordDate);
+    let next;
+    if (period === 'day') next = addDays(base, -1);
+    else if (period === 'week') next = addDays(base, -7);
+    else next = new Date(base.getFullYear(), base.getMonth() - 1, 1);
+    this.setData({ recordDate: formatDate(next) }, () => this.refreshRecords());
+  },
+
+  nextRecordRange() {
+    const period = this.data.recordPeriod;
+    const base = new Date(this.data.recordDate);
+    let next;
+    if (period === 'day') next = addDays(base, 1);
+    else if (period === 'week') next = addDays(base, 7);
+    else next = new Date(base.getFullYear(), base.getMonth() + 1, 1);
+    this.setData({ recordDate: formatDate(next) }, () => this.refreshRecords());
+  },
+
+  refreshRecords() {
+    const period = this.data.recordPeriod;
+    const base = new Date(this.data.recordDate || formatDate(new Date()));
+    const { start, end } = periodRange(base, period);
+    const startStr = formatDate(start);
+    const endStr = formatDate(end);
+    const allRecords = getStore(ATTENDANCE_KEY, []);
+    const staff = getStore(STAFF_KEY, []);
+    const shifts = getStore(SHIFT_KEY, []);
+    const stores = getStore(STORE_KEY, []);
+    const staffMap = staff.reduce((map, item) => {
+      map[item.id] = item.name;
+      return map;
+    }, {});
+    const shiftMap = shifts.reduce((map, item) => {
+      map[item.id] = item.name;
+      return map;
+    }, {});
+    const storeMap = stores.reduce((map, item) => {
+      map[item.id] = item.name;
+      return map;
+    }, {});
+    const currentStoreId = this.data.currentStoreId;
+    const list = allRecords
+      .filter((item) => item && item.date >= startStr && item.date <= endStr)
+      .filter((item) => item.storeId === currentStoreId)
+      .map((item) => ({
+        ...item,
+        staffName: staffMap[item.staffId] || '未知员工',
+        shiftName: shiftMap[item.shiftId] || '未知班次',
+        storeName: item.storeName || storeMap[item.storeId] || '未匹配门店'
+      }))
+      .sort((a, b) => {
+        if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+        return (a.clockIn || '').localeCompare(b.clockIn || '');
+      });
+    this.setData({
+      recordList: list,
+      recordRangeText: rangeLabel(start, end, period),
+      recordEmptyText: list.length ? '' : `${startStr === endStr ? startStr : `${startStr} ~ ${endStr}`} 暂无打卡记录`
+    });
   },
 
   prevMonth() {
@@ -181,6 +343,22 @@ Page({
 
   autoSchedule() {
     if (!this.data.canManage) return;
+    if (!this.data.canAutoSchedule) {
+      wx.showToast({ title: '过去月份不可生成班表', icon: 'none' });
+      return;
+    }
+    if (!this.data.storeStaff.length) {
+      wx.showModal({
+        title: '无可排班员工',
+        content: '当前门店没有可排班员工（店长/普通员工）。请先在员工管理中添加本门店员工，超管不参与排班。',
+        showCancel: false
+      });
+      return;
+    }
+    if (!this.data.shifts.length) {
+      wx.showToast({ title: '请先配置班次', icon: 'none' });
+      return;
+    }
     const days = getMonthDays(this.data.year, this.data.month);
     const monthSchedule = generateMonthSchedule(days, this.data.shifts, this.data.storeStaff);
     const next = {

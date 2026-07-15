@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "本月排班"
+  "navigationBarTitleText": "本月排班",
+  "usingComponents": {
+    "custom-tab-bar": "/custom-tab-bar/index"
+  }
 }

@@ -30,6 +30,30 @@ function staffStoreIds(staff) {
   return [];
 }
 
+function nowMinutes() {
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes();
+}
+
+// 根据当前时间匹配落在区间内的班次，落空返回 -1
+function detectShiftNow(shifts) {
+  const minutes = nowMinutes();
+  return shifts.findIndex((shift) => {
+    const start = shift.startTime;
+    const end = shift.endTime;
+    if (!start || !end) return false;
+    const startParts = String(start).split(':');
+    const endParts = String(end).split(':');
+    const startMin = Number(startParts[0]) * 60 + Number(startParts[1]);
+    const endMin = Number(endParts[0]) * 60 + Number(endParts[1]);
+    if (startMin <= endMin) {
+      return minutes >= startMin && minutes <= endMin;
+    }
+    // 跨天班次（如 22:00-02:00）
+    return minutes >= startMin || minutes <= endMin;
+  });
+}
+
 Page({
   data: {
     today: '',
@@ -48,6 +72,7 @@ Page({
     selectedShiftIndex: -1,
     selectedStaffName: '',
     selectedShiftName: '',
+    autoShiftHint: '',
     locating: false
   },
 
@@ -78,6 +103,23 @@ Page({
     const visibleStaff = canManage
       ? staff.filter((item) => isSuperAdmin || staffStoreIds(item).indexOf(currentStoreId) >= 0)
       : staff;
+    const currentVisibleStaffIndex = visibleStaff.findIndex((item) => item.id === currentStaffId);
+    // 姓名锁定为当前登录用户：所有角色都默认当前员工，且不再允许切换
+    const defaultStaffIndex = currentVisibleStaffIndex >= 0 ? currentVisibleStaffIndex : this.data.selectedStaffIndex;
+    const defaultStaffName = currentVisibleStaffIndex >= 0 ? (currentStaff.name || '') : this.data.selectedStaffName;
+    // 班次自动识别：仅在用户尚未手动选择时根据当前时间匹配
+    let detectedShiftIndex = this.data.selectedShiftIndex;
+    let detectedShiftName = this.data.selectedShiftName;
+    let autoShiftHint = '';
+    if (detectedShiftIndex < 0) {
+      const matched = detectShiftNow(shifts);
+      if (matched >= 0) {
+        detectedShiftIndex = matched;
+        detectedShiftName = shifts[matched].name;
+      } else {
+        autoShiftHint = '当前时间未匹配到班次，请手动选择';
+      }
+    }
     const allRecords = getStore(ATTENDANCE_KEY, []);
     const staffMap = staff.reduce((map, item) => {
       map[item.id] = item.name;
@@ -119,17 +161,12 @@ Page({
       currentStaffName: currentStaff.name || '',
       employeeAuth,
       employeeReady,
-      selectedStaffIndex: role === 'employee' ? Math.max(0, currentStaffIndex) : this.data.selectedStaffIndex,
-      selectedStaffName: role === 'employee' ? (currentStaff.name || '') : this.data.selectedStaffName
+      selectedStaffIndex: defaultStaffIndex,
+      selectedStaffName: defaultStaffName,
+      selectedShiftIndex: detectedShiftIndex,
+      selectedShiftName: detectedShiftName,
+      autoShiftHint
     }, () => syncTabBar(this));
-  },
-
-  selectStaff(event) {
-    const index = Number(event.detail.value);
-    this.setData({
-      selectedStaffIndex: index,
-      selectedStaffName: this.data.staff[index].name
-    });
   },
 
   selectShift(event) {

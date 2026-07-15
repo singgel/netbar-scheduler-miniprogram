@@ -9,9 +9,9 @@
     <view wx:else class="simple-login">
       <view class="brand">班次小助手</view>
       <view class="login-title">登录</view>
-      <view class="login-copy">使用微信手机号授权识别超级管理员、店长或普通员工身份。</view>
+      <view class="login-copy">使用手机号+密码登录</view>
 
-      <view class="login-tabs">
+      <view wx:if="{{enableCodeLogin}}" class="login-tabs">
         <view class="tab-btn {{loginMode === 'code' ? 'active' : ''}}" data-mode="code" bindtap="switchLoginMode">验证码</view>
         <view class="tab-btn {{loginMode === 'password' ? 'active' : ''}}" data-mode="password" bindtap="switchLoginMode">密码</view>
       </view>
@@ -51,12 +51,11 @@
         <button class="login-primary" bindtap="loginWithForm">登录</button>
       </view>
 
-      <button class="wechat-login" bindtap="openPhoneAuthSheet">微信手机号授权登录</button>
-      <view class="login-tip">体验验证码 / 密码：123456</view>
+      <button wx:if="{{enableWechatPhoneLogin}}" class="wechat-login" bindtap="openPhoneAuthSheet">微信手机号授权登录</button>
       <view wx:if="{{authError}}" class="auth-error">{{authError}}</view>
     </view>
 
-    <view wx:if="{{phoneAuthSheetVisible}}" class="auth-mask" catchtouchmove="noop">
+    <view wx:if="{{enableWechatPhoneLogin && phoneAuthSheetVisible}}" class="auth-mask" catchtouchmove="noop">
       <view class="auth-sheet">
         <view class="auth-head">
           <view>
@@ -130,6 +129,10 @@
           </view>
           <view class="mini-title">员工查询</view>
         </view>
+        <navigator class="mini-app" url="/pages/attendance/attendance" hover-class="none">
+          <view class="mini-icon icon-attendance"><view class="icon-glyph"></view></view>
+          <view class="mini-title">员工打卡</view>
+        </navigator>
       </view>
     </view>
 
@@ -142,11 +145,11 @@
           </view>
           <view class="mini-title">设置中心</view>
         </navigator>
-        <view class="mini-app" bindtap="clearEmployeeBind" hover-class="none">
+        <view wx:if="{{isSuperAdmin}}" class="mini-app" bindtap="clearCurrentStoreData" hover-class="none">
           <view class="mini-icon icon-test">
             <view class="icon-glyph"></view>
           </view>
-          <view class="mini-title">测试工具</view>
+          <view class="mini-title">门店清理</view>
         </view>
       </view>
     </view>

@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "班次设置"
+  "navigationBarTitleText": "班次设置",
+  "usingComponents": {
+    "custom-tab-bar": "/custom-tab-bar/index"
+  }
 }

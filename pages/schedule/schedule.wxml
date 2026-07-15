@@ -1,21 +1,53 @@
 <view class="page schedule-page">
-  <view class="topbar">
-    <view class="topbar-main">
-      <view class="title">{{monthText}}</view>
-      <view class="topbar-desc">{{canManage ? '管理端：查看和调整门店班次安排' : '员工端：查看本门店与我的班次'}}</view>
-      <view wx:if="{{role === 'employee'}}" class="mine-tag">当前员工：{{currentStaffName || '未选择'}} · 本门店排班</view>
+  <view class="workbench-back-icon" bindtap="goWorkbench">‹</view>
+
+  <view wx:if="{{canManage}}" class="page-tabs">
+    <view class="page-tab {{activeTab === 'schedule' ? 'active' : ''}}" data-tab="schedule" bindtap="switchTab">班表</view>
+    <view class="page-tab {{activeTab === 'records' ? 'active' : ''}}" data-tab="records" bindtap="switchTab">打卡记录</view>
+  </view>
+
+  <block wx:if="{{activeTab === 'records'}}">
+    <view class="record-period">
+      <view class="period-seg">
+        <view class="period-seg-item {{recordPeriod === 'day' ? 'active' : ''}}" data-period="day" bindtap="switchRecordPeriod">日</view>
+        <view class="period-seg-item {{recordPeriod === 'week' ? 'active' : ''}}" data-period="week" bindtap="switchRecordPeriod">周</view>
+        <view class="period-seg-item {{recordPeriod === 'month' ? 'active' : ''}}" data-period="month" bindtap="switchRecordPeriod">月</view>
+      </view>
+      <view class="record-range-switch">
+        <view class="record-range-arrow" bindtap="prevRecordRange">‹</view>
+        <view class="record-range-current">{{recordRangeText}}</view>
+        <view class="record-range-arrow" bindtap="nextRecordRange">›</view>
+      </view>
     </view>
+
+    <view class="record-list">
+      <view wx:if="{{!recordList.length}}" class="empty-card">{{recordEmptyText}}</view>
+      <view wx:for="{{recordList}}" wx:key="id" class="record-card">
+        <view>
+          <view class="record-main">{{item.staffName}} · {{item.shiftName}}</view>
+          <view class="muted">{{item.storeName}} · {{item.date}}</view>
+        </view>
+        <view class="record-time">
+          <view>上班：{{item.clockIn || '-'}}</view>
+          <view>下班：{{item.clockOut || '-'}}</view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <block wx:else>
+  <view class="schedule-tools {{canManage ? 'manage' : 'employee'}}">
     <view class="month-switch">
       <button class="month-arrow" bindtap="prevMonth">‹</button>
       <view class="month-current">{{monthShortText}}</view>
       <button class="month-arrow" bindtap="nextMonth">›</button>
     </view>
-  </view>
-
-  <view wx:if="{{canManage}}" class="toolbar">
-    <button class="btn btn-primary" bindtap="autoSchedule"><text class="btn-icon">+</text>生成本月班表</button>
-    <button class="btn btn-ghost" bindtap="printSchedule"><text class="btn-icon">🖨</text>打印</button>
-    <button class="btn btn-ghost" bindtap="clearMonth"><text class="btn-icon">×</text>清空</button>
+    <view wx:if="{{role === 'employee'}}" class="mine-tag">当前员工：{{currentStaffName || '未选择'}} · 本门店排班</view>
+    <view wx:if="{{canManage}}" class="toolbar">
+      <button class="btn btn-primary auto-schedule-btn {{!canAutoSchedule ? 'btn-disabled' : ''}}" disabled="{{!canAutoSchedule}}" bindtap="autoSchedule">生成班表</button>
+      <button class="btn btn-ghost" bindtap="printSchedule"><text class="btn-icon">🖨</text>打印</button>
+      <button class="btn btn-ghost" bindtap="clearMonth"><text class="btn-icon">×</text>清空</button>
+    </view>
   </view>
 
   <view wx:if="{{role === 'employee' && !employeeReady}}" class="empty-state">
@@ -51,11 +83,15 @@
                 <view class="shift-name">{{shift.name}}</view>
                 <view class="shift-time">{{shift.time}}</view>
               </view>
-              <button wx:if="{{canManage}}" class="cell-btn" data-date="{{item.date}}" data-shift="{{shift.id}}" bindtap="openPicker">调整</button>
+              <view wx:if="{{canManage}}" class="cell-btn" data-date="{{item.date}}" data-shift="{{shift.id}}" bindtap="openPicker">调整</view>
             </view>
             <view class="people">
-              <text wx:if="{{!shift.names.length}}" class="empty">未排</text>
-              <text wx:for="{{shift.names}}" wx:for-item="name" wx:key="*this" class="person">{{name}}</text>
+              <text wx:if="{{!shift.nameItems.length}}" class="empty">未排</text>
+              <view wx:for="{{shift.nameItems}}" wx:for-item="person" wx:key="id" class="person-wrap">
+                <text class="person">{{person.name}}</text>
+                <text wx:if="{{person.status === 'checkedIn'}}" class="person-tag checked">已打卡</text>
+                <text wx:if="{{person.status === 'absent'}}" class="person-tag absent">缺勤</text>
+              </view>
             </view>
           </view>
         </view>
@@ -112,4 +148,5 @@
       <view class="muted print-tip">保存到相册后，可在打印店或办公室打印机打印为 A4 横向纸张。</view>
     </view>
   </view>
+  </block>
 </view>
