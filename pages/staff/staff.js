@@ -8,7 +8,8 @@ const {
   getStore,
   setStore,
   saveStore,
-  saveStores
+  saveStores,
+  syncStoreFromBackend
 } = require('../../utils/store');
 const {
   upsertStaffRoleRelation,
@@ -166,6 +167,9 @@ Page({
       this.setData({ activeStaffMenu: defaultMenu });
     }
     this.refresh();
+    syncStoreFromBackend()
+      .then(() => this.refresh())
+      .catch(() => {});
   },
 
   refresh() {

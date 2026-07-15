@@ -2,7 +2,8 @@ const {
   CURRENT_STAFF_KEY,
   EMPLOYEE_AUTH_KEY,
   STORE_KEY,
-  getStore
+  getStore,
+  syncStoreFromBackend
 } = require('../../../utils/store');
 const { syncRoleFromAuth, getVisibleStoresForRole } = require('../../../utils/role');
 
@@ -17,6 +18,13 @@ Page({
   },
 
   onShow() {
+    this.refresh();
+    syncStoreFromBackend()
+      .then(() => this.refresh())
+      .catch(() => {});
+  },
+
+  refresh() {
     const stores = getStore(STORE_KEY, []);
     const auth = getStore(EMPLOYEE_AUTH_KEY, {});
     const role = syncRoleFromAuth(auth);

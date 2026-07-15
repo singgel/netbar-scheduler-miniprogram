@@ -138,8 +138,17 @@ function getStaffStoreIds(staffId) {
   return currentStaff.storeId ? [currentStaff.storeId] : [];
 }
 
+function isSuperAdminStaff(staffId) {
+  if (!staffId) return false;
+  const staff = getStore(STAFF_KEY, []);
+  const relations = getStore(STAFF_ROLE_RELATION_KEY, []);
+  const currentStaff = staff.find((item) => item.id === staffId) || {};
+  const relation = relations.find((item) => item.staffId === staffId) || {};
+  return isSuperAdminRole(currentStaff.role) || isSuperAdminRole(relation.role);
+}
+
 function getVisibleStoresForRole(role, stores, staffId) {
-  if (isSuperAdminRole(role)) return stores || [];
+  if (isSuperAdminRole(role) || isSuperAdminStaff(staffId)) return stores || [];
   const allowedStoreIds = getStaffStoreIds(staffId);
   if (!allowedStoreIds.length) return isAdminSideRole(role) ? [] : (stores || []);
   return (stores || []).filter((store) => allowedStoreIds.indexOf(store.id) >= 0);

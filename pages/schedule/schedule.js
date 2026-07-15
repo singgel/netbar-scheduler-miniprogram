@@ -11,7 +11,8 @@ const {
   CURRENT_STORE_KEY,
   getStore,
   setStore,
-  saveStore
+  saveStore,
+  syncStoreFromBackend
 } = require('../../utils/store');
 const { getMonthDays, monthLabel, formatDate } = require('../../utils/date');
 const { generateMonthSchedule, staffNameMap } = require('../../utils/scheduler');
@@ -116,6 +117,9 @@ Page({
 
   onShow() {
     this.refresh();
+    syncStoreFromBackend()
+      .then(() => this.refresh())
+      .catch(() => {});
   },
 
   refresh() {

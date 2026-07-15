@@ -11,7 +11,8 @@ const {
   INVITE_CODE_KEY,
   DEBUG_ROLE_SWITCH_KEY,
   getStore,
-  setStore
+  setStore,
+  syncStoreFromBackend
 } = require('../../utils/store');
 const { wxLogin, exchangePhoneCode, getCurrentUserRole } = require('../../utils/auth');
 const {
@@ -71,6 +72,9 @@ Page({
 
   onShow() {
     this.refresh();
+    syncStoreFromBackend()
+      .then(() => this.refresh())
+      .catch(() => {});
   },
 
   refresh() {

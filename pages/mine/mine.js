@@ -8,7 +8,8 @@ const {
   INVITE_CODE_KEY,
   STORE_KEY,
   getStore,
-  setStore
+  setStore,
+  syncStoreFromBackend
 } = require('../../utils/store');
 const { API_BASE } = require('../../utils/config');
 const { getMonthDays } = require('../../utils/date');
@@ -40,6 +41,9 @@ Page({
 
   onShow() {
     this.refresh();
+    syncStoreFromBackend()
+      .then(() => this.refresh())
+      .catch(() => {});
   },
 
   refresh() {

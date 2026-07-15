@@ -8,7 +8,8 @@ const {
   getStore,
   setStore,
   saveStore,
-  saveStores
+  saveStores,
+  syncStoreFromBackend
 } = require('../../utils/store');
 const { isAdminSideRole, isSuperAdminRole, getVisibleStoresForRole, getScopedCurrentStoreId, syncTabBar } = require('../../utils/role');
 const { buildShiftTime, currentTime, sortShiftsByStartTime } = require('../../utils/shifts');
@@ -42,6 +43,9 @@ Page({
 
   onShow() {
     this.refresh();
+    syncStoreFromBackend()
+      .then(() => this.refresh())
+      .catch(() => {});
   },
 
   refresh() {

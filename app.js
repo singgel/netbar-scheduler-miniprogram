@@ -27,7 +27,6 @@ App({
     if (inviteCode) {
       setStore(INVITE_CODE_KEY, decodeURIComponent(inviteCode));
       setStore(ROLE_KEY, 'employee');
-      return;
     }
     syncStoreFromBackend()
       .then(() => {
